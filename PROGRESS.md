@@ -5,7 +5,7 @@
 
 - **시작일**: 2026-04-27
 - **현재 주차**: Week 1
-- **마지막 업데이트**: 2026-04-27
+- **마지막 업데이트**: 2026-04-28
 
 ---
 
@@ -18,7 +18,7 @@
 ## 📊 전체 진행률
 
 ```
-Week 1 (MVP)            ███░░░░░░░  30%   ← 진행 중
+Week 1 (MVP)            ████████░░  80%   ← 진행 중 (Phase 7 배포 남음)
 Week 2 (레시피)          ░░░░░░░░░░   0%
 Week 3 (알림)           ░░░░░░░░░░   0%
 Week 4 (영수증 OCR)     ░░░░░░░░░░   0%
@@ -40,7 +40,7 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 - [x] `.gitignore` Python용 정비
 - [x] 첫 커밋 + 푸시 (`feat: initialize FastAPI project with uv`)
 
-### Phase 1: 환경 구성 🟡 진행 중
+### Phase 1: 환경 구성 ✅ 완료
 
 - [x] PostgreSQL Docker 컨테이너 띄우기
 - [x] `docker-compose.yml` 작성
@@ -162,8 +162,14 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 
 ## 📝 변경 로그
 
+### 2026-04-28
+- Phase 3 완료: Item/PriceHistory 모델, Alembic 마이그레이션, 품목 시드 20종
+- Phase 4 완료: GET /api/prices/today, Pydantic 스키마, 7일/30일 변동률 계산
+- Phase 5 뼈대 완료: APScheduler(06:00 KST), kamis_client.py 골격
+- Phase 6 완료: Jinja2 템플릿, Tailwind CDN, 카테고리별 가격 카드 UI
+
 ### 2026-04-27
 - 프로젝트 시작
 - 기획서 v1.0 (Java) → v1.1 (Python) 전환
 - Phase 0 완료 (기본 프로젝트 셋업)
-- Phase 1 시작 (PostgreSQL 연결 준비)
+- Phase 1 완료 (PostgreSQL Docker, config.py, database.py)
