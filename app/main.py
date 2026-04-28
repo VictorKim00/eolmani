@@ -2,9 +2,11 @@ from fastapi import FastAPI, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.api.prices import router as prices_router
 from app.database import get_db
 
 app = FastAPI(title="얼마니", version="0.1.0")
+app.include_router(prices_router)
 
 
 @app.get("/")

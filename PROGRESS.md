@@ -72,12 +72,12 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 - [x] 첫 마이그레이션 적용
 - [x] 시드 데이터 스크립트 (품목 마스터 20종)
 
-### Phase 4: 백엔드 API ⬜ 대기
+### Phase 4: 백엔드 API ✅ 완료
 
-- [ ] `GET /api/prices/today` 엔드포인트
-- [ ] Pydantic 응답 스키마 (`schemas/price.py`)
-- [ ] 변동률 계산 로직 (7일/30일)
-- [ ] Swagger UI 확인
+- [x] `GET /api/prices/today` 엔드포인트
+- [x] Pydantic 응답 스키마 (`schemas/price.py`)
+- [x] 변동률 계산 로직 (7일/30일)
+- [x] Swagger UI 확인 (`/docs`)
 
 ### Phase 5: 데이터 수집 ⬜ 대기
 
@@ -108,9 +108,9 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 
 ## 📋 다음 액션 (Top 3)
 
-1. **Phase 4: `GET /api/prices/today` 엔드포인트 + Pydantic 스키마** ← 다음 단계
-2. 변동률 계산 로직 (7일/30일)
-3. KAMIS API 키 받으면 kamis_client.py 완성 → Phase 5 (데이터 수집)
+1. **Phase 5: APScheduler 구조 + kamis_client.py 골격** ← 다음 단계
+2. KAMIS API 키 받으면 kamis_client.py 완성 → 실데이터 수집 시작
+3. Phase 6: Jinja2 프론트엔드 (목 데이터로 UI 먼저 완성)
 
 ---
 
