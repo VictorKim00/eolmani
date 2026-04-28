@@ -45,6 +45,12 @@ def index(request: Request, db: Session = Depends(get_db)):
     for item in data.items:
         categories[item.category].append(item)
 
+    # TOP 5 오늘의 특가: 7일 대비 하락폭이 큰 순 (30일 데이터 없으면 7일 기준)
+    deals = sorted(
+        [i for i in data.items if i.change_7d is not None and i.change_7d < 0],
+        key=lambda i: i.change_7d,
+    )[:5]
+
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -53,6 +59,7 @@ def index(request: Request, db: Session = Depends(get_db)):
             "categories": dict(categories),
             "category_emoji": CATEGORY_EMOJI,
             "total_count": data.count,
+            "deals": deals,
         },
     )
 
