@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if not categories %}
+<!-- 데이터 없을 때 -->
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <div class="text-5xl mb-4">🥬</div>
+  <h2 class="text-lg font-semibold text-gray-600 mb-2">데이터 수집 준비 중</h2>
+  <p class="text-sm text-gray-400">
+    KAMIS API 연동 후 매일 06:00에 가격이 자동 수집됩니다.<br />
+    잠시 후 다시 확인해 주세요.
+  </p>
+</div>
+
+{% else %}
+
+<!-- 요약 배너 -->
+<div class="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+  <span class="text-2xl">🛒</span>
+  <div>
+    <p class="text-sm font-semibold text-emerald-700">오늘 {{ total_count }}개 품목 가격</p>
+    <p class="text-xs text-emerald-500">{{ today }} 기준 · KAMIS 소매가</p>
+  </div>
+</div>
+
+<!-- 카테고리별 섹션 -->
+{% for category, items in categories.items() %}
+<section class="mb-8">
+  <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+    {{ category_emoji[category] }} {{ category }}
+  </h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    {% for item in items %}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center">
+
+      <!-- 품목 정보 -->
+      <div>
+        <p class="font-semibold text-gray-800">{{ item.name }}</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }}</p>
+      </div>
+
+      <!-- 가격 + 변동률 -->
+      <div class="text-right">
+        <p class="text-lg font-bold text-gray-900">
+          {{ "{:,.0f}".format(item.price) }}원
+        </p>
+        <div class="flex gap-2 justify-end mt-1">
+          {{ change_badge(item.change_7d, "7일") }}
+          {{ change_badge(item.change_30d, "30일") }}
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}
+
+{% macro change_badge(rate, label) %}
+{% if rate is none %}
+  <span class="text-xs text-gray-300">—</span>
+{% elif rate > 0 %}
+  <span class="text-xs font-medium text-red-500">▲{{ "%.1f"|format(rate) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
+{% elif rate < 0 %}
+  <span class="text-xs font-medium text-blue-500">▼{{ "%.1f"|format(rate|abs) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
+{% else %}
+  <span class="text-xs text-gray-400">— {{ label }}</span>
+{% endif %}
+{% endmacro %}
+
+{% block scripts %}{% endblock %}

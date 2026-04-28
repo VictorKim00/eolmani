@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}얼마니{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    [x-cloak] { display: none; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+  <!-- 헤더 -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div>
+        <span class="text-xl font-bold text-emerald-600">얼마니</span>
+        <span class="ml-2 text-xs text-gray-400">오늘 식료품 얼마니?</span>
+      </div>
+      <span class="text-xs text-gray-400">{{ today }}</span>
+    </div>
+  </header>
+
+  <!-- 본문 -->
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="max-w-3xl mx-auto px-4 py-6 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
+    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a></p>
+    <p class="mt-1">얼마니는 비상업 무료 서비스입니다.</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -79,21 +79,24 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 - [x] 변동률 계산 로직 (7일/30일)
 - [x] Swagger UI 확인 (`/docs`)
 
-### Phase 5: 데이터 수집 ⬜ 대기
+### Phase 5: 데이터 수집 🟡 뼈대 완료 / API 키 대기
 
-- [ ] APScheduler 설정
-- [ ] 매일 06시 KAMIS 호출 → DB 적재
-- [ ] 에러 처리 + 로깅
+- [x] APScheduler 설정 (매일 06:00 Asia/Seoul)
+- [x] `kamis_client.py` 골격 (키 없으면 빈 리스트 반환)
+- [x] `price_collector.py` — TODO 블록 채우면 즉시 작동
+- [ ] KAMIS API 키 수령 → collect_prices() 구현
 - [ ] 초기 데이터 백필 (지난 7~30일)
 
-### Phase 6: 프론트 ⬜ 대기
+### Phase 6: 프론트 ✅ 완료
 
-- [ ] `app/templates/base.html`, `index.html`
-- [ ] Tailwind CDN 적용
-- [ ] 품목 리스트 + 변동률 화살표(↑↓)
-- [ ] 모바일 반응형
-- [ ] Chart.js로 7일 변동 그래프
-- [ ] Footer (출처 표시 + 후원 링크)
+- [x] `app/templates/base.html`, `index.html`
+- [x] Tailwind CDN 적용
+- [x] 품목 카드 + 변동률 화살표 (▲빨강 / ▼파랑)
+- [x] 카테고리별 섹션 (곡물/채소/과일/축산/수산)
+- [x] 데이터 없을 때 안내 화면
+- [x] 모바일 반응형 (grid sm:grid-cols-2)
+- [x] Footer (출처 표시)
+- [ ] Chart.js 7일 변동 그래프 (데이터 쌓이면 추가)
 
 ### Phase 7: 배포 ⬜ 대기
 
@@ -108,9 +111,9 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 
 ## 📋 다음 액션 (Top 3)
 
-1. **Phase 5: APScheduler 구조 + kamis_client.py 골격** ← 다음 단계
-2. KAMIS API 키 받으면 kamis_client.py 완성 → 실데이터 수집 시작
-3. Phase 6: Jinja2 프론트엔드 (목 데이터로 UI 먼저 완성)
+1. **KAMIS API 키 수령 → collect_prices() 구현 + 백필** ← 블로커
+2. Phase 7: Dockerfile 작성 → Railway 배포
+3. Chart.js 7일 그래프 (데이터 7일치 쌓이면 추가)
 
 ---
 
