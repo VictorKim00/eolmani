@@ -216,9 +216,9 @@ http://www.kamis.or.kr/service/price/xml.do?
 - [x] Footer (KAMIS 출처 표시)
 - [ ] Chart.js 7일 변동 그래프 (데이터 7일 쌓이면 추가)
 
-### Phase 7: 배포 ⬜ 대기 ← **다음 단계**
+### Phase 7: 배포 🟡 진행 중
 
-- [ ] `Dockerfile` 작성
+- [x] `Dockerfile` 작성 (빌드 검증 완료)
 - [ ] Railway 가입 / GitHub 연동
 - [ ] 환경변수 등록 (KAMIS 키, DB URL)
 - [ ] 배포 후 동작 확인
