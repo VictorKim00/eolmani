@@ -64,13 +64,13 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
   - [ ] 갈치, 고등어, 오징어
 - [ ] `app/services/kamis_client.py` 초안 작성
 
-### Phase 3: 도메인 모델 ⬜ 대기
+### Phase 3: 도메인 모델 ✅ 완료
 
-- [ ] Alembic 초기화
-- [ ] `Item` 모델 (id, code, name, category, unit)
-- [ ] `PriceHistory` 모델 (id, item_id, price, recorded_date, source)
-- [ ] 첫 마이그레이션 적용
-- [ ] 시드 데이터 스크립트 (품목 마스터)
+- [x] Alembic 초기화
+- [x] `Item` 모델 (id, code, name, category, unit)
+- [x] `PriceHistory` 모델 (id, item_id, price, recorded_date, source)
+- [x] 첫 마이그레이션 적용
+- [x] 시드 데이터 스크립트 (품목 마스터 20종)
 
 ### Phase 4: 백엔드 API ⬜ 대기
 
@@ -108,9 +108,9 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 
 ## 📋 다음 액션 (Top 3)
 
-1. **PostgreSQL Docker 컨테이너 띄우기** ← 다음 단계
-2. `.env` + 설정 클래스 작성
-3. KAMIS API 키 받으면 즉시 응답 구조 파악
+1. **Phase 4: `GET /api/prices/today` 엔드포인트 + Pydantic 스키마** ← 다음 단계
+2. 변동률 계산 로직 (7일/30일)
+3. KAMIS API 키 받으면 kamis_client.py 완성 → Phase 5 (데이터 수집)
 
 ---
 
