@@ -1,6 +1,6 @@
 """
 APScheduler 설정 및 가격 수집 작업.
-매일 06:00 KAMIS에서 전 품목 가격을 수집해 DB에 적재한다.
+매일 06:00 (Asia/Seoul) KAMIS에서 전 품목 가격을 수집해 DB에 적재한다.
 """
 
 import logging
@@ -8,49 +8,86 @@ from datetime import date
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from sqlalchemy.dialects.postgresql import insert
+
+from app.database import SessionLocal
+from app.models.item import Item
+from app.models.price_history import PriceHistory
+from app.services.kamis_client import extract_price_and_date, fetch_category, find_item_row
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="Asia/Seoul")
 
 
 async def collect_prices() -> None:
-    """
-    KAMIS 일별 가격 수집 → DB 적재.
-    API 키 수령 후 아래 TODO 블록을 채울 것.
-    """
+    """KAMIS 일별 가격 수집 → DB 적재 (upsert)."""
     today = date.today().isoformat()
     logger.info(f"[수집 시작] {today}")
 
-    # TODO: API 키 수령 후 구현
-    # from app.database import SessionLocal
-    # from app.models.item import Item
-    # from app.models.price_history import PriceHistory
-    # from app.services.kamis_client import fetch_daily_prices
-    #
-    # db = SessionLocal()
-    # try:
-    #     items = db.query(Item).all()
-    #     for item in items:
-    #         rows = await fetch_daily_prices(item.code, today)
-    #         for row in rows:
-    #             price = float(row.get("price", 0))
-    #             if price <= 0:
-    #                 continue
-    #             record = PriceHistory(
-    #                 item_id=item.id,
-    #                 price=price,
-    #                 recorded_date=date.fromisoformat(today),
-    #                 source="kamis",
-    #             )
-    #             db.merge(record)  # upsert (UniqueConstraint 기준)
-    #     db.commit()
-    # except Exception as e:
-    #     logger.error(f"[수집 오류] {e}")
-    #     db.rollback()
-    # finally:
-    #     db.close()
+    db = SessionLocal()
+    try:
+        items: list[Item] = db.query(Item).all()
 
-    logger.info(f"[수집 완료] {today}")
+        # 카테고리별로 묶어서 API 호출 최소화
+        categories: dict[str, list[Item]] = {}
+        for item in items:
+            categories.setdefault(item.kamis_category_code, []).append(item)
+
+        total_saved = 0
+
+        for category_code, cat_items in categories.items():
+            if not category_code:
+                continue
+
+            rows = await fetch_category(category_code, today)
+            if not rows:
+                logger.warning(f"[{category_code}] 응답 없음 — 건너뜀")
+                continue
+
+            for item in cat_items:
+                row = find_item_row(
+                    rows,
+                    item.kamis_item_code,
+                    item.kamis_kind_code,
+                    item.kamis_rank,
+                )
+                if row is None:
+                    logger.debug(f"매핑 없음: {item.name} ({item.kamis_item_code}/{item.kamis_kind_code})")
+                    continue
+
+                result = extract_price_and_date(row, today)
+                if result is None:
+                    logger.debug(f"유효 가격 없음: {item.name}")
+                    continue
+
+                price, price_date = result
+
+                # upsert: 같은 (item_id, recorded_date, source) 있으면 price 갱신
+                stmt = (
+                    insert(PriceHistory)
+                    .values(
+                        item_id=item.id,
+                        price=price,
+                        recorded_date=date.fromisoformat(price_date),
+                        source="kamis",
+                    )
+                    .on_conflict_do_update(
+                        constraint="uq_price_item_date_source",
+                        set_={"price": price},
+                    )
+                )
+                db.execute(stmt)
+                total_saved += 1
+                logger.debug(f"저장: {item.name} = {price:,.0f}원 ({price_date})")
+
+        db.commit()
+        logger.info(f"[수집 완료] {today} — {total_saved}건 저장")
+
+    except Exception as e:
+        logger.error(f"[수집 오류] {e}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
 
 
 def start_scheduler() -> None:

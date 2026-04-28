@@ -13,6 +13,12 @@ class Item(Base):
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     unit: Mapped[str] = mapped_column(String(20), nullable=False)
 
+    # KAMIS API 매핑 정보
+    kamis_category_code: Mapped[str] = mapped_column(String(10), nullable=False, default="")
+    kamis_item_code: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    kamis_kind_code: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    kamis_rank: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
     price_history: Mapped[list["PriceHistory"]] = relationship(
         back_populates="item", cascade="all, delete-orphan"
     )

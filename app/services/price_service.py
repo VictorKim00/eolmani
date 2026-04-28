@@ -8,39 +8,56 @@ from app.models.price_history import PriceHistory
 from app.schemas.price import PriceItem, PricesTodayResponse
 
 
-def _get_price_on(db: Session, item_id: int, target_date: date) -> float | None:
-    row = db.execute(
-        select(PriceHistory.price)
-        .where(PriceHistory.item_id == item_id)
-        .where(PriceHistory.recorded_date == target_date)
-        .limit(1)
-    ).scalar_one_or_none()
-    return float(row) if row is not None else None
-
-
-def _change_rate(today: float, past: float | None) -> float | None:
-    if past is None or past == 0:
-        return None
-    return round((today - past) / past * 100, 2)
-
-
 def get_today_prices(db: Session) -> PricesTodayResponse:
-    today = date.today()
-    d7 = today - timedelta(days=7)
-    d30 = today - timedelta(days=30)
+    """
+    품목별 가장 최근 가격을 반환한다.
+    오늘 데이터가 없으면 어제 데이터로 자동 폴백.
+    """
+    # 서브쿼리: 품목별 최신 recorded_date
+    subq = (
+        select(
+            PriceHistory.item_id,
+            PriceHistory.price,
+            PriceHistory.recorded_date,
+        )
+        .distinct(PriceHistory.item_id)
+        .where(PriceHistory.source == "kamis")
+        .order_by(PriceHistory.item_id, PriceHistory.recorded_date.desc())
+        .subquery()
+    )
 
     rows = db.execute(
-        select(Item, PriceHistory.price, PriceHistory.recorded_date)
-        .join(PriceHistory, Item.id == PriceHistory.item_id)
-        .where(PriceHistory.recorded_date == today)
+        select(Item, subq.c.price, subq.c.recorded_date)
+        .join(subq, Item.id == subq.c.item_id)
         .order_by(Item.category, Item.name)
     ).all()
 
+    today = date.today()
     items: list[PriceItem] = []
+
     for item, price, recorded_date in rows:
         price_float = float(price)
-        past_7d = _get_price_on(db, item.id, d7)
-        past_30d = _get_price_on(db, item.id, d30)
+        d7 = recorded_date - timedelta(days=7)
+        d30 = recorded_date - timedelta(days=30)
+
+        past_7d = db.execute(
+            select(PriceHistory.price)
+            .where(PriceHistory.item_id == item.id)
+            .where(PriceHistory.recorded_date == d7)
+            .limit(1)
+        ).scalar_one_or_none()
+
+        past_30d = db.execute(
+            select(PriceHistory.price)
+            .where(PriceHistory.item_id == item.id)
+            .where(PriceHistory.recorded_date == d30)
+            .limit(1)
+        ).scalar_one_or_none()
+
+        def rate(past) -> float | None:
+            if past is None or float(past) == 0:
+                return None
+            return round((price_float - float(past)) / float(past) * 100, 2)
 
         items.append(PriceItem(
             item_id=item.id,
@@ -50,8 +67,9 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             unit=item.unit,
             price=price_float,
             recorded_date=recorded_date,
-            change_7d=_change_rate(price_float, past_7d),
-            change_30d=_change_rate(price_float, past_30d),
+            change_7d=rate(past_7d),
+            change_30d=rate(past_30d),
         ))
 
-    return PricesTodayResponse(date=today, count=len(items), items=items)
+    display_date = max((i.recorded_date for i in items), default=today)
+    return PricesTodayResponse(date=display_date, count=len(items), items=items)
