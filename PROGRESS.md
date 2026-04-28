@@ -42,12 +42,12 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 
 ### Phase 1: 환경 구성 🟡 진행 중
 
-- [ ] PostgreSQL Docker 컨테이너 띄우기
-- [ ] `docker-compose.yml` 작성
-- [ ] `.env` + `.env.example` 파일 만들기
-- [ ] `app/config.py` (pydantic-settings) 작성
-- [ ] `app/database.py` (SQLAlchemy 엔진/세션) 작성
-- [ ] DB 연결 확인 (간단한 헬스체크)
+- [x] PostgreSQL Docker 컨테이너 띄우기
+- [x] `docker-compose.yml` 작성
+- [x] `.env` + `.env.example` 파일 만들기
+- [x] `app/config.py` (pydantic-settings) 작성
+- [x] `app/database.py` (SQLAlchemy 엔진/세션) 작성
+- [x] DB 연결 확인 (간단한 헬스체크)
 
 ### Phase 2: 데이터 탐색 ⬜ 대기
 
