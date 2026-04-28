@@ -1,7 +1,7 @@
 # 얼마니 (Eolmani) — 개발 진행 보고서
 
 > 작성일: 2026-04-28  
-> 작성자: Kim (가천대학교 컴퓨터공학과)  
+> 작성자: 개발자  
 > 상태: Week 1 MVP — Phase 7 (배포) 직전
 
 ---
@@ -15,7 +15,7 @@
 | **데이터 출처** | KAMIS (농산물유통정보) Open API |
 | **운영 방침** | 비상업 무료 서비스 (광고 없음, 공익 목적) |
 | **시작일** | 2026-04-27 |
-| **레포지토리** | github.com/VictorKim00/eolmani (private, MVP 후 public 전환 예정) |
+| **레포지토리** | github.com/eolmani (public) |
 
 ---
 
@@ -76,7 +76,7 @@ Week 7+ (AI 예측)       ░░░░░░░░░░   0%
 - 부류/품목/지역 코드 체계 확인 (`data/농축수산물 품목 및 등급 코드표.xlsx`)
 - 실제 API 호출로 `item_code`, `kind_code`, `rank` 필드 확인
 - SSL 문제 진단 및 해결 (레거시 cipher 허용 컨텍스트 적용)
-- cert_id = `7790` (숫자 ID, 이메일 아님) 확인
+- cert_id 확인 (숫자 ID, 이메일 아님)
 
 ### Phase 3 — 도메인 모델 ✅
 - `Item` 모델: `id`, `code`, `name`, `category`, `unit` + KAMIS 매핑 필드 4개
