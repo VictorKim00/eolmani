@@ -2,7 +2,7 @@
 
 > 작성일: 2026-04-28  
 > 작성자: 개발자  
-> 상태: Week 1 MVP — Phase 7 (배포) 직전
+> 상태: Week 1 MVP 완료 — 라이브 운영 중 (https://eolmani-production.up.railway.app)
 
 ---
 
@@ -22,13 +22,14 @@
 ## 2. 개발 기간 및 진행률
 
 ```
-Week 1 (MVP)            ████████░░  80%   ← 진행 중 (배포만 남음)
-Week 2 (레시피)          ░░░░░░░░░░   0%
-Week 3 (알림)           ░░░░░░░░░░   0%
-Week 4 (영수증 OCR)     ░░░░░░░░░░   0%
-Week 5 (개인 CPI)       ░░░░░░░░░░   0%
-Week 6 (슈링크플레이션) ░░░░░░░░░░   0%
-Week 7+ (AI 예측)       ░░░░░░░░░░   0%
+Week 1 (MVP)              ██████████  100%  ✅ 완료
+Week 2 (그래프+레시피)    ░░░░░░░░░░   0%
+Week 3 (알림)             ░░░░░░░░░░   0%
+Week 4 (영수증 OCR)       ░░░░░░░░░░   0%
+Week 5~6 (가격 캘린더)    ░░░░░░░░░░   0%   ← 1년치 데이터 누적 후
+Week 5~6 (개인 CPI)       ░░░░░░░░░░   0%
+Week 6~7 (슈링크플레이션) ░░░░░░░░░░   0%
+Week 7+ (AI 예측)         ░░░░░░░░░░   0%
 ```
 
 **총 개발 시간**: 약 1일 (2026-04-27 ~ 2026-04-28)
@@ -251,21 +252,26 @@ date: 2026-04-28, count: 19
 
 ---
 
-## 9. 남은 작업 (Week 1 완성까지)
+## 9. Week 1 이후 계획
 
-### Phase 7 — 배포 (미착수)
+### Week 2 — 그래프 + 레시피
+- [ ] Chart.js 7일 가격 변동 그래프 (데이터 7일 쌓이면)
+- [ ] 레시피 기반 장보기 ("김치찌개 4인분" → 재료비 계산)
 
-- [ ] `Dockerfile` 작성
-- [ ] Railway 가입 / GitHub 연동
-- [ ] 환경변수 등록 (KAMIS 키, DB URL)
-- [ ] 배포 후 동작 확인
-- [ ] GitHub README에 라이브 URL 추가
-- [ ] 레포 Public 전환
+### Week 3 — 알림
+- [ ] 회원가입, 관심 품목 즐겨찾기
+- [ ] 목표 가격 도달 시 이메일 알림
 
-### 추가 예정 (데이터 쌓이면)
+### Week 4 — 영수증 OCR
+- [ ] 영수증 사진 업로드 → OCR → 평균가 비교 카드
 
-- [ ] Chart.js 7일 변동 그래프
-- [ ] 7일치 누적 후 변동률 표시 시작
+### Week 5~6 — 가격 캘린더 + 제철 정보
+- [ ] 품목별 월별 평균 가격 그래프 (1년치 누적 후)
+- [ ] "이 달에 사면 이득인 식재료" 제철 안내
+- [ ] 개인화 CPI 대시보드
+
+### Week 7+ — AI 예측
+- [ ] Prophet / scikit-learn 기반 가격 예측 모델
 
 ---
 
@@ -277,12 +283,13 @@ date: 2026-04-28, count: 19
 | `3a184b5` | FastAPI 프로젝트 초기화 (uv) |
 | `ccbcc96` | PROJECT.md, PROGRESS.md 추가 |
 | `0be0a4b` | PostgreSQL Docker + FastAPI 앱 구조 |
-| `9031868` | Phase 1 완료 체크, root main.py 삭제 |
 | `9c96df0` | Phase 3: 도메인 모델, Alembic, 시드 데이터 |
 | `9ae89b9` | Phase 4: 가격 API 엔드포인트, Pydantic 스키마 |
-| `b3e59a8` | Phase 5-6: 스케줄러 뼈대, KAMIS 골격, Jinja2 프론트 |
-| `8c44105` | PROGRESS.md 진행상황 동기화 |
 | `c7dd166` | Phase 2+5 완성: KAMIS 실데이터 파이프라인 완전 작동 |
+| `d89199f` | fix: psycopg2 → psycopg3 URL 변환 (Railway 배포 오류) |
+| `414f30d` | fix: app/static .gitkeep 추가 (Railway 배포 오류) |
+| `43f33ed` | docs: Phase 7 완료 — Railway 배포 성공 |
+| `c7d4424` | feat: 오늘의 특가 TOP5 섹션 추가 |
 
 ---
 
