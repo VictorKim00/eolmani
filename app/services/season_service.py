@@ -74,5 +74,5 @@ def get_this_month_season() -> dict:
     month = date.today().month
     return {
         "month": month,
-        "items": SEASON_CALENDAR.get(month, []),
+        "picks": SEASON_CALENDAR.get(month, []),
     }

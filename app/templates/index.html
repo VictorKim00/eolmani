@@ -61,13 +61,13 @@
 {% endif %}
 
 <!-- 이번 달 추천 구매 -->
-{% if season.items %}
+{% if season.picks %}
 <section class="mb-8">
   <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
     📅 {{ season.month }}월 추천 구매 — 지금 사두면 이득
   </h2>
   <div class="bg-white rounded-xl border border-emerald-100 shadow-sm divide-y divide-gray-50">
-    {% for s in season.items %}
+    {% for s in season.picks %}
     <div class="px-4 py-3 flex items-start gap-3">
       <span class="text-xl mt-0.5">{{ s.emoji }}</span>
       <div>
