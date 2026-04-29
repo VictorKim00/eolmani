@@ -81,10 +81,17 @@
           </div>
           {% endif %}
         </div>
-        <p class="text-xs text-gray-400 mt-0.5">
-          {{ s.reason }}
-          {% if not s.signal %}<span class="text-gray-300"> · 가격 미추적 품목</span>{% endif %}
+        <p class="text-xs text-gray-400 mt-0.5">{{ s.reason }}</p>
+        {% if s.stats %}
+        <p class="text-xs mt-1
+          {% if s.stats.pct_diff <= -3 %}text-blue-500 font-medium
+          {% elif s.stats.pct_diff >= 3 %}text-red-500 font-medium
+          {% else %}text-gray-400{% endif %}">
+          {{ s.stats.label }}
         </p>
+        {% elif not s.signal %}
+        <p class="text-xs text-gray-300 mt-0.5">가격 미추적 품목</p>
+        {% endif %}
       </div>
     </div>
     {% endfor %}

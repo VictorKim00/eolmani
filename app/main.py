@@ -12,6 +12,7 @@ from app.api.prices import router as prices_router
 from app.database import get_db
 from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
+from app.services.price_stats_service import enrich_season_picks
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal
 from app.services.weather_client import fetch_forecast
@@ -66,8 +67,9 @@ async def index(request: Request, db: Session = Depends(get_db)):
     impacts = get_impacts(forecast)
     week_summary = get_week_summary(forecast)
 
-    # 시즌 캘린더 — item_code 있는 picks에 실제 신호등 + 가격 주입
+    # 시즌 캘린더 — item_code 있는 picks에 실제 신호등 + 가격 + 월별 통계 주입
     season = get_this_month_season()
+    season["picks"] = enrich_season_picks(db, season["picks"], date.today().month)
     item_map = {i.code: i for i in data.items}
     for pick in season["picks"]:
         code = pick.get("item_code")
