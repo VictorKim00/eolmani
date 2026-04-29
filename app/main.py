@@ -66,6 +66,19 @@ async def index(request: Request, db: Session = Depends(get_db)):
     impacts = get_impacts(forecast)
     week_summary = get_week_summary(forecast)
 
+    # 시즌 캘린더 — item_code 있는 picks에 실제 신호등 + 가격 주입
+    season = get_this_month_season()
+    item_map = {i.code: i for i in data.items}
+    for pick in season["picks"]:
+        code = pick.get("item_code")
+        if code and code in item_map:
+            item = item_map[code]
+            pick["signal"] = signals[code]
+            pick["price"] = item.price
+            pick["unit"] = item.unit
+        else:
+            pick["signal"] = None
+
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -78,7 +91,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "signals": signals,
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
-            "season": get_this_month_season(),
+            "season": season,
             "forecast": forecast,
             "impacts": impacts,
             "week_summary": week_summary,

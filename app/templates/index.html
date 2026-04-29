@@ -70,9 +70,21 @@
     {% for s in season.picks %}
     <div class="px-4 py-3 flex items-start gap-3">
       <span class="text-xl mt-0.5">{{ s.emoji }}</span>
-      <div>
-        <p class="font-semibold text-gray-800 text-sm">{{ s.name }}</p>
-        <p class="text-xs text-gray-400 mt-0.5">{{ s.reason }}</p>
+      <div class="flex-1">
+        <div class="flex items-center justify-between">
+          <p class="font-semibold text-gray-800 text-sm">{{ s.name }}</p>
+          {% if s.signal %}
+          <div class="flex items-center gap-1.5 text-xs">
+            <span>{{ signal_emoji[s.signal] }}</span>
+            <span class="font-bold text-gray-700">{{ "{:,.0f}".format(s.price) }}원</span>
+            <span class="text-gray-300">{{ s.unit }}</span>
+          </div>
+          {% endif %}
+        </div>
+        <p class="text-xs text-gray-400 mt-0.5">
+          {{ s.reason }}
+          {% if not s.signal %}<span class="text-gray-300"> · 가격 미추적 품목</span>{% endif %}
+        </p>
       </div>
     </div>
     {% endfor %}

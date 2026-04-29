@@ -1,6 +1,7 @@
 """
-시즌 대량구매 캘린더 — 월별 추천 품목 정적 데이터.
-한국 식문화 기반 (김장/장아찌/제철 등), 수동 큐레이션.
+시즌 대량구매 캘린더 — 월별 추천 품목.
+item_code가 있는 품목은 실제 KAMIS 가격 데이터와 연결됨.
+item_code가 None인 품목은 우리가 추적하지 않는 품목 (시즌 팁 제공).
 """
 
 from datetime import date
@@ -8,64 +9,64 @@ from datetime import date
 
 SEASON_CALENDAR: dict[int, list[dict]] = {
     1: [
-        {"emoji": "🍊", "name": "한라봉", "reason": "제철 절정, 지금이 가장 달고 저렴"},
-        {"emoji": "🍓", "name": "딸기", "reason": "국산 딸기 출하 피크, 1~2월이 연중 최대 물량"},
-        {"emoji": "🐟", "name": "동태·명태", "reason": "겨울 제철 수산물, 연중 가장 신선하고 저렴"},
+        {"emoji": "🍊", "name": "한라봉·감귤", "reason": "겨울 제철 절정", "item_code": "mandarin"},
+        {"emoji": "🐟", "name": "갈치", "reason": "겨울 제철 수산물", "item_code": "hairtail"},
+        {"emoji": "🍓", "name": "딸기", "reason": "출하 피크 — 1~2월이 연중 최대 물량", "item_code": None},
     ],
     2: [
-        {"emoji": "🍓", "name": "딸기", "reason": "제철 막바지, 2월 말까지 저렴 — 잼·청 담기 좋은 시기"},
-        {"emoji": "🍊", "name": "한라봉·감귤", "reason": "겨울 감귤 시즌 마무리, 가격 내려가는 구간"},
-        {"emoji": "🥬", "name": "봄나물 (냉이·달래)", "reason": "이른 봄 출하 시작, 2월 말부터 저렴"},
+        {"emoji": "🍓", "name": "딸기", "reason": "제철 막바지 — 잼·청 담기 좋은 시기", "item_code": None},
+        {"emoji": "🐟", "name": "고등어", "reason": "겨울 제철 수산물", "item_code": "mackerel"},
+        {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 시작 — 겨울보다 저렴해지는 시기", "item_code": "spinach"},
     ],
     3: [
-        {"emoji": "🌿", "name": "봄나물 (냉이·달래·쑥)", "reason": "봄 제철 절정 — 지금 아니면 내년까지 기다려야"},
-        {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 시작, 단맛 강하고 평년 대비 저렴"},
-        {"emoji": "🥬", "name": "봄 배추", "reason": "봄 배추 출하 — 겨울 배추보다 가격 저렴"},
+        {"emoji": "🌿", "name": "봄나물 (냉이·달래·쑥)", "reason": "봄 제철 절정 — 지금 아니면 내년까지", "item_code": None},
+        {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 시작", "item_code": "spinach"},
+        {"emoji": "🥬", "name": "배추", "reason": "봄 배추 출하", "item_code": "cabbage"},
     ],
     4: [
-        {"emoji": "🌿", "name": "봄나물 (쑥·봄동)", "reason": "봄나물 절정 — 지금 아니면 내년까지 기다려야"},
-        {"emoji": "🧅", "name": "양파·대파", "reason": "봄 햇양파 출하 전 마지막 저렴 구간"},
-        {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 피크, 평년 대비 가장 저렴한 달"},
+        {"emoji": "🌿", "name": "봄나물 (쑥·봄동)", "reason": "봄 제철 절정 — 지금 아니면 내년까지", "item_code": None},
+        {"emoji": "🧅", "name": "양파", "reason": "햇양파 출하 전, 시즌 직전 가격 확인", "item_code": "onion"},
+        {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 피크 시기", "item_code": "spinach"},
     ],
     5: [
-        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌용 — 6월 초 이전 구매해야 가격 저렴"},
-        {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 시작, 연중 최저가 타이밍 시작"},
-        {"emoji": "🥬", "name": "봄 배추", "reason": "봄 김치 담그기 좋은 시기, 여름 전 마지막"},
+        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌용 — 6월 초 이전 구매 권장", "item_code": None},
+        {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 시작", "item_code": "garlic"},
+        {"emoji": "🥬", "name": "배추", "reason": "봄 배추 출하", "item_code": "cabbage"},
     ],
     6: [
-        {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 절정 — 1년치 비축 최적 타이밍"},
-        {"emoji": "🧅", "name": "양파", "reason": "햇양파 대량 출하, 연중 최저가 — 대량 구매 강력 추천"},
-        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌 막바지 — 6월 중순까지"},
+        {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 절정 — 1년치 비축 시기", "item_code": "garlic"},
+        {"emoji": "🧅", "name": "양파", "reason": "햇양파 대량 출하 — 대량 구매 적기", "item_code": "onion"},
+        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌 막바지 — 6월 중순까지", "item_code": None},
     ],
     7: [
-        {"emoji": "🧅", "name": "양파", "reason": "햇양파 재고 소진 전 마지막 저렴 구간"},
-        {"emoji": "🥒", "name": "오이·애호박", "reason": "여름 채소 출하 피크, 가성비 연중 최고"},
-        {"emoji": "🌶️", "name": "고추", "reason": "햇고추 출하, 고추장·김치용 대량 구매 시기"},
+        {"emoji": "🧅", "name": "양파", "reason": "여름 재고 소진 전 마지막 구간", "item_code": "onion"},
+        {"emoji": "🥒", "name": "오이", "reason": "여름 제철 출하 피크", "item_code": "cucumber"},
+        {"emoji": "🥬", "name": "애호박", "reason": "여름 제철 출하 피크", "item_code": "zucchini"},
     ],
     8: [
-        {"emoji": "🍑", "name": "복숭아", "reason": "제철 절정 — 8월 안에 소비해야 가장 저렴"},
-        {"emoji": "🌶️", "name": "고추", "reason": "건고추·고추장 담그기 — 8월이 햇고추 연중 최저가"},
-        {"emoji": "🍎", "name": "수박·참외", "reason": "여름 과일 출하 피크, 지금이 연중 최저가"},
+        {"emoji": "🥒", "name": "오이", "reason": "여름 제철 절정", "item_code": "cucumber"},
+        {"emoji": "🥬", "name": "애호박", "reason": "여름 제철 절정", "item_code": "zucchini"},
+        {"emoji": "🍑", "name": "복숭아", "reason": "제철 절정 — 8월 안에 소비", "item_code": None},
     ],
     9: [
-        {"emoji": "🍎", "name": "사과·배", "reason": "햇사과·햇배 출하 — 추석 전 대량 구매 추천"},
-        {"emoji": "🥬", "name": "배추·무", "reason": "김장 준비 선제 구매 — 9월이 10~11월보다 저렴"},
-        {"emoji": "🐟", "name": "고등어·갈치", "reason": "가을 제철 수산물, 지금이 연중 가장 신선·저렴"},
+        {"emoji": "🍎", "name": "사과", "reason": "햇사과 출하 — 추석 전 대량 구매", "item_code": "apple"},
+        {"emoji": "🍐", "name": "배", "reason": "햇배 출하 — 추석 전 대량 구매", "item_code": "pear"},
+        {"emoji": "🐟", "name": "고등어", "reason": "가을 제철 수산물", "item_code": "mackerel"},
     ],
     10: [
-        {"emoji": "🍎", "name": "사과·배", "reason": "추석 이후 가격 안정 — 대량 구매 적기"},
-        {"emoji": "🥬", "name": "배추·무", "reason": "김장 본격 준비 — 10월 말이 가격 저점"},
-        {"emoji": "🧄", "name": "마늘·양파", "reason": "김장용 양념 채소 — 재고 소진 전 미리 확보"},
+        {"emoji": "🍎", "name": "사과", "reason": "추석 이후 가격 안정기", "item_code": "apple"},
+        {"emoji": "🥬", "name": "배추", "reason": "김장 준비 — 10월 말이 가격 저점", "item_code": "cabbage"},
+        {"emoji": "🧄", "name": "마늘", "reason": "김장용 양념 채소 — 미리 확보", "item_code": "garlic"},
     ],
     11: [
-        {"emoji": "🥬", "name": "배추", "reason": "⭐ 김장 시즌 — 11월 초·중순이 연중 최저가"},
-        {"emoji": "🌶️", "name": "고추·마늘", "reason": "김장 양념 최대 수요기, 미리 확보 권장"},
-        {"emoji": "🐟", "name": "갈치·고등어", "reason": "겨울 수산물 출하, 연간 최저가 구간"},
+        {"emoji": "🥬", "name": "배추", "reason": "⭐ 김장 시즌 — 11월 초·중순 집중 확인", "item_code": "cabbage"},
+        {"emoji": "🧅", "name": "양파", "reason": "김장 양념용", "item_code": "onion"},
+        {"emoji": "🐟", "name": "갈치", "reason": "겨울 제철 시작", "item_code": "hairtail"},
     ],
     12: [
-        {"emoji": "🐟", "name": "동태·명태", "reason": "제사상·설 준비 — 12월이 연중 가장 저렴"},
-        {"emoji": "🍊", "name": "한라봉·감귤", "reason": "겨울 감귤 출하 시작, 지금부터 2월까지"},
-        {"emoji": "🥬", "name": "시금치", "reason": "겨울 시금치 출하 — 달고 영양가 높은 시기"},
+        {"emoji": "🐟", "name": "갈치", "reason": "겨울 제철 절정", "item_code": "hairtail"},
+        {"emoji": "🐟", "name": "고등어", "reason": "겨울 제철 절정", "item_code": "mackerel"},
+        {"emoji": "🍊", "name": "감귤", "reason": "겨울 감귤 출하 시작", "item_code": "mandarin"},
     ],
 }
 

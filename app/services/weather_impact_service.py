@@ -42,7 +42,7 @@ _RULES = [
         "reason": "폭염으로 노지 채소 성장 저하",
     },
     {
-        "condition": "폭우·장마",
+        "condition": "강수",
         "emoji": "🌧️",
         "check": lambda d: d["precip_prob"] >= 70 and d["weather_code"] >= 61,
         "items": ["배추", "오이", "애호박"],
