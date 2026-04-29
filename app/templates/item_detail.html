@@ -79,8 +79,8 @@
 
 {% block scripts %}
 <script>
-  const labels = {{ history.points | map(attribute='date') | list | tojson }};
-  const prices = {{ history.points | map(attribute='price') | list | tojson }};
+  const labels = {{ chart_labels | tojson }};
+  const prices = {{ chart_prices | tojson }};
   const avgYear = {{ history.avg_year_price | tojson }};
 
   const datasets = [

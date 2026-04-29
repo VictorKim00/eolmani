@@ -99,6 +99,10 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
             _rate(p7),
         )
 
+    # date 객체는 tojson 직렬화 불가 → 문자열로 변환해서 넘김
+    chart_labels = [str(p.date) for p in history.points]
+    chart_prices = [p.price for p in history.points]
+
     return templates.TemplateResponse(
         request,
         "item_detail.html",
@@ -108,6 +112,8 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
             "signal": signal,
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
+            "chart_labels": chart_labels,
+            "chart_prices": chart_prices,
         },
     )
 
