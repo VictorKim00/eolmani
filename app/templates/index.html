@@ -23,6 +23,44 @@
   </div>
 </div>
 
+<!-- 주간 날씨 + 가격 영향 -->
+{% if forecast %}
+<section class="mb-8">
+  <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+    🌤️ 이번 주 날씨 · 가격 영향
+  </h2>
+
+  {% if week_summary %}
+  <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3">
+    {% for summary in week_summary %}
+    <p class="text-xs text-blue-700 {% if not loop.first %}mt-1{% endif %}">⚠️ {{ summary }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+    {% for day in forecast %}
+    <div class="flex-shrink-0 w-[72px] bg-white rounded-xl border border-gray-100 shadow-sm px-2 py-3 text-center
+      {% if impacts[day.date] is defined %}border-orange-200{% endif %}">
+      <p class="text-xs text-gray-400 mb-1">{{ day.weekday }}</p>
+      <p class="text-lg leading-none mb-1">{{ day.emoji }}</p>
+      <p class="text-xs font-bold text-red-400">{{ day.temp_max | int }}°</p>
+      <p class="text-xs text-blue-400">{{ day.temp_min | int }}°</p>
+      {% if day.precip_prob > 0 %}
+      <p class="text-xs text-gray-300 mt-1">💧{{ day.precip_prob }}%</p>
+      {% endif %}
+      {% if impacts[day.date] is defined %}
+      <p class="text-xs mt-1">
+        {% for impact in impacts[day.date] %}{{ impact.emoji }}{% endfor %}
+      </p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="text-xs text-gray-300 mt-2 text-right">Open-Meteo · 서울 기준</p>
+</section>
+{% endif %}
+
 <!-- 이번 달 추천 구매 -->
 {% if season.items %}
 <section class="mb-8">

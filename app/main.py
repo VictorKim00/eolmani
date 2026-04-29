@@ -14,6 +14,8 @@ from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal
+from app.services.weather_client import fetch_forecast
+from app.services.weather_impact_service import get_impacts, get_week_summary
 
 CATEGORY_EMOJI: dict[str, str] = {
     "곡물": "🌾",
@@ -39,7 +41,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/")
-def index(request: Request, db: Session = Depends(get_db)):
+async def index(request: Request, db: Session = Depends(get_db)):
     data = get_today_prices(db)
 
     # 카테고리별 그룹핑
@@ -59,6 +61,11 @@ def index(request: Request, db: Session = Depends(get_db)):
         for i in data.items
     }
 
+    # 날씨 예보 + 영향 룰
+    forecast = await fetch_forecast(days=7)
+    impacts = get_impacts(forecast)
+    week_summary = get_week_summary(forecast)
+
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -72,6 +79,9 @@ def index(request: Request, db: Session = Depends(get_db)):
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
             "season": get_this_month_season(),
+            "forecast": forecast,
+            "impacts": impacts,
+            "week_summary": week_summary,
         },
     )
 
