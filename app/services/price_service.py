@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.item import Item
 from app.models.price_history import PriceHistory
-from app.schemas.price import PriceItem, PricesTodayResponse
+from app.schemas.price import PriceHistoryPoint, PriceHistoryResponse, PriceItem, PricesTodayResponse
 
 
 def get_today_prices(db: Session) -> PricesTodayResponse:
@@ -59,6 +59,8 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
                 return None
             return round((price_float - float(past)) / float(past) * 100, 2)
 
+        change_avg = rate(item.avg_year_price) if item.avg_year_price else None
+
         items.append(PriceItem(
             item_id=item.id,
             code=item.code,
@@ -69,7 +71,36 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             recorded_date=recorded_date,
             change_7d=rate(past_7d),
             change_30d=rate(past_30d),
+            change_avg=change_avg,
         ))
 
     display_date = max((i.recorded_date for i in items), default=today)
     return PricesTodayResponse(date=display_date, count=len(items), items=items)
+
+
+def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistoryResponse | None:
+    item = db.execute(select(Item).where(Item.code == item_code)).scalar_one_or_none()
+    if item is None:
+        return None
+
+    since = date.today() - timedelta(days=days)
+    rows = db.execute(
+        select(PriceHistory.recorded_date, PriceHistory.price)
+        .where(PriceHistory.item_id == item.id)
+        .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.recorded_date >= since)
+        .order_by(PriceHistory.recorded_date)
+    ).all()
+
+    points = [PriceHistoryPoint(date=r.recorded_date, price=float(r.price)) for r in rows]
+    current_price = points[-1].price if points else 0.0
+
+    return PriceHistoryResponse(
+        item_code=item.code,
+        item_name=item.name,
+        unit=item.unit,
+        category=item.category,
+        current_price=current_price,
+        avg_year_price=float(item.avg_year_price) if item.avg_year_price else None,
+        points=points,
+    )

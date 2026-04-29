@@ -95,6 +95,11 @@ def find_item_row(
     return None
 
 
+def extract_avg_year_price(row: dict) -> float | None:
+    """dpr7(평년 가격)을 파싱해 반환. 없으면 None."""
+    return _parse_price(row.get("dpr7", "-"))
+
+
 def extract_price_and_date(row: dict, today: str) -> tuple[float, str] | None:
     """
     dpr1(당일) → dpr2(1일 전) 순으로 유효한 가격을 찾아 (price, date) 반환.

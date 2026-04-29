@@ -16,8 +16,8 @@
   <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
       <div>
-        <span class="text-xl font-bold text-emerald-600">얼마니</span>
-        <span class="ml-2 text-xs text-gray-400">오늘 식료품 얼마니?</span>
+        <a href="/" class="text-xl font-bold text-emerald-600">얼마니</a>
+        <span class="ml-2 text-xs text-gray-400 hidden sm:inline">오늘 사과 얼마니? 다음 주에는 얼마니?</span>
       </div>
       <span class="text-xs text-gray-400">{{ today }}</span>
     </div>
@@ -30,8 +30,8 @@
 
   <!-- 푸터 -->
   <footer class="max-w-3xl mx-auto px-4 py-6 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
-    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a></p>
-    <p class="mt-1">얼마니는 비상업 무료 서비스입니다.</p>
+    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a> · 도소매 조사 평균 · 서울 기준</p>
+    <p class="mt-1">마트별 실제 가격과 다를 수 있습니다 · 얼마니는 비상업 무료 서비스입니다.</p>
   </footer>
 
   {% block scripts %}{% endblock %}

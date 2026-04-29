@@ -3,7 +3,6 @@
 {% block content %}
 
 {% if not categories %}
-<!-- 데이터 없을 때 -->
 <div class="flex flex-col items-center justify-center py-20 text-center">
   <div class="text-5xl mb-4">🥬</div>
   <h2 class="text-lg font-semibold text-gray-600 mb-2">데이터 수집 준비 중</h2>
@@ -20,7 +19,7 @@
   <span class="text-2xl">🛒</span>
   <div>
     <p class="text-sm font-semibold text-emerald-700">오늘 {{ total_count }}개 품목 가격</p>
-    <p class="text-xs text-emerald-500">{{ today }} 기준 · KAMIS 소매가</p>
+    <p class="text-xs text-emerald-500">{{ today }} 기준 · KAMIS 도소매 조사 평균 · 트렌드 지표</p>
   </div>
 </div>
 
@@ -30,9 +29,12 @@
   <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">🔥 오늘의 특가 — 평소보다 저렴해요</h2>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     {% for item in deals %}
-    <div class="bg-white rounded-xl border border-blue-100 shadow-sm px-4 py-3 flex justify-between items-center">
+    <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-blue-100 shadow-sm px-4 py-3 flex justify-between items-center hover:border-blue-300 transition-colors">
       <div>
-        <p class="font-semibold text-gray-800">{{ item.name }}</p>
+        <div class="flex items-center gap-1.5">
+          <span class="text-base">{{ signal_emoji[signals[item.code]] }}</span>
+          <p class="font-semibold text-gray-800">{{ item.name }}</p>
+        </div>
         <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }}</p>
       </div>
       <div class="text-right">
@@ -41,7 +43,7 @@
           일주일 전보다 ▼{{ "%.1f"|format(item.change_7d|abs) }}%
         </p>
       </div>
-    </div>
+    </a>
     {% endfor %}
   </div>
 </section>
@@ -56,12 +58,15 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     {% for item in items %}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center">
+    <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:border-emerald-200 transition-colors">
 
       <!-- 품목 정보 -->
       <div>
-        <p class="font-semibold text-gray-800">{{ item.name }}</p>
-        <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }}</p>
+        <div class="flex items-center gap-1.5">
+          <span class="text-base">{{ signal_emoji[signals[item.code]] }}</span>
+          <p class="font-semibold text-gray-800">{{ item.name }}</p>
+        </div>
+        <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }} · 전국 평균</p>
       </div>
 
       <!-- 가격 + 변동률 -->
@@ -75,7 +80,7 @@
         </div>
       </div>
 
-    </div>
+    </a>
     {% endfor %}
   </div>
 </section>

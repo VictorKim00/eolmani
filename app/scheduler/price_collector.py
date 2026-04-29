@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.database import SessionLocal
 from app.models.item import Item
 from app.models.price_history import PriceHistory
-from app.services.kamis_client import extract_price_and_date, fetch_category, find_item_row
+from app.services.kamis_client import extract_avg_year_price, extract_price_and_date, fetch_category, find_item_row
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="Asia/Seoul")
@@ -79,6 +79,11 @@ async def collect_prices() -> None:
                 db.execute(stmt)
                 total_saved += 1
                 logger.debug(f"저장: {item.name} = {price:,.0f}원 ({price_date})")
+
+                # 평년 가격(dpr7) 갱신
+                avg_year = extract_avg_year_price(row)
+                if avg_year is not None:
+                    item.avg_year_price = avg_year
 
         db.commit()
         logger.info(f"[수집 완료] {today} — {total_saved}건 저장")

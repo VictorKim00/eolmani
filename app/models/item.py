@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -18,6 +18,9 @@ class Item(Base):
     kamis_item_code: Mapped[str] = mapped_column(String(20), nullable=False, default="")
     kamis_kind_code: Mapped[str] = mapped_column(String(20), nullable=False, default="")
     kamis_rank: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+    # KAMIS dpr7 — 평년 가격 (매일 수집 시 갱신)
+    avg_year_price: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
 
     price_history: Mapped[list["PriceHistory"]] = relationship(
         back_populates="item", cascade="all, delete-orphan"

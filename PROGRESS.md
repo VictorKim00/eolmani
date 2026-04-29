@@ -4,42 +4,42 @@
 > 다른 AI에게 컨텍스트 전달 시 `PROJECT.md`와 함께 읽도록 안내해주세요.
 
 - **시작일**: 2026-04-27
-- **현재 주차**: Week 1
+- **현재 주차**: Week 2 시작
 - **마지막 업데이트**: 2026-04-28
+- **라이브 URL**: https://eolmani-production.up.railway.app
 
 ---
 
 ## 🎯 현재 목표
 
-**Week 1 — MVP 출시**: KAMIS 데이터 → DB 적재 → 웹 페이지에 가격/변동률 표시 → 배포
+**Week 2 — 친구 피드백 반영 + 차별화 기능 1차**:
+30일 그래프 + "지금이 살 때?" 신호등 + 시즌 캘린더 + 메인 카피 수정.
+정체성을 "단순 가격 표시"에서 "**구매 타이밍 가이드**"로 확장.
 
 ---
 
 ## 📊 전체 진행률
 
 ```
-Week 1 (MVP)              ██████████  100%  ✅ 완료 (https://eolmani-production.up.railway.app)
-Week 2 (그래프)           ░░░░░░░░░░   0%
-Week 3 (알림)             ░░░░░░░░░░   0%
-Week 4 (영수증 OCR)       ░░░░░░░░░░   0%
-Week 5~6 (가격 캘린더)    ░░░░░░░░░░   0%   ← 1년치 데이터 누적 후
-Week 5~6 (개인 CPI)       ░░░░░░░░░░   0%
-Week 6~7 (슈링크플레이션) ░░░░░░░░░░   0%
-Week 7+ (AI 예측)         ░░░░░░░░░░   0%
+Week 1 (MVP)               ██████████  100%  ✅ 라이브
+Week 2 (신호등+그래프)      ███████░░░   70%  ← 진행 중
+Week 3 (날씨+브리핑)        ░░░░░░░░░░    0%
+Week 4~5 (공산품)           ░░░░░░░░░░    0%
+보류 (가격 알림)            ░░░░░░░░░░    0%
+보류 (영수증 OCR)           ░░░░░░░░░░    0%
+보류 (개인 CPI/슈링크)      ░░░░░░░░░░    0%
+보류 (AI 예측)              ░░░░░░░░░░    0%
 ```
 
 ---
 
-## 🔌 KAMIS API 명세 (정리)
-
-> 다른 AI가 KAMIS 클라이언트를 작성할 때 이 섹션만 보면 됨.
+## 🔌 KAMIS API 명세
 
 ### 사용 API: 일별 부류별 도/소매가격정보
 
 - **공식 문서**: https://www.kamis.or.kr/customer/reference/openapi_list.do?action=detail&boardno=1
 - **엔드포인트**: `http://www.kamis.or.kr/service/price/xml.do` (302 → https로 리다이렉트됨)
 - **Action**: `dailyPriceByCategoryList`
-- **메서드**: GET (쿼리 파라미터)
 - **반환 형식**: JSON (`p_returntype=json`)
 
 ### 요청 파라미터
@@ -50,12 +50,12 @@ Week 7+ (AI 예측)         ░░░░░░░░░░   0%
 | `p_cert_id` | string | ✅ | 요청자 ID — **숫자 ID** (이메일 아님) |
 | `p_returntype` | string | ✅ | `json` 사용 |
 | `p_product_cls_code` | string | 선택 | `01`=소매(우리 기준), `02`=도매 |
-| `p_item_category_code` | string | 선택 | 부류코드 (아래 표 참조) |
+| `p_item_category_code` | string | 선택 | 부류코드 (아래 표) |
 | `p_country_code` | string | 선택 | 지역코드 — 서울 `1101` 사용 |
 | `p_regday` | string | 선택 | `YYYY-MM-DD` |
 | `p_convert_kg_yn` | string | 선택 | `N` 사용 (원래 단위 유지) |
 
-### 부류 코드 (`p_item_category_code`)
+### 부류 코드
 
 | 코드 | 부류 |
 |-----|------|
@@ -65,9 +65,9 @@ Week 7+ (AI 예측)         ░░░░░░░░░░   0%
 | 500 | 축산물 |
 | 600 | 수산물 |
 
-### 응답 필드 ⭐ (실제 확인된 필드명)
+### 응답 필드 (실제 확인된 필드명)
 
-**한 번 호출로 시계열 7개가 다 옴 → 변동률 계산이 단순함.**
+**한 번 호출로 시계열 7개 수신 → 변동률 계산 단순.**
 
 | 필드 | 의미 |
 |------|------|
@@ -77,15 +77,15 @@ Week 7+ (AI 예측)         ░░░░░░░░░░   0%
 | `kind_code` | 품종코드 (**언더스코어** — `kindcode` 아님) |
 | `rank` | 등급 (상품 / 중품 / 大 / 1등급 등) |
 | `unit` | 단위 (예: 10개, 1kg) |
-| `dpr1` | **당일 가격** ⭐ (미수집 시 `"-"`) |
+| `dpr1` | **당일 가격** (미수집 시 `"-"`) |
 | `dpr2` | 1일 전 가격 ← dpr1 없을 때 폴백 |
 | `dpr3` | 1주일 전 가격 |
 | `dpr5` | 1개월 전 가격 |
 | `dpr6` | 1년 전 가격 |
 | `dpr7` | 평년 가격 |
 
-**주의사항:**
-- 가격 문자열에 콤마 포함 (`"3,500"`) → 파싱 시 `.replace(",", "")` 필요
+### 주의사항
+- 가격 문자열에 콤마 포함 (`"3,500"`) → `.replace(",", "")` 필요
 - 데이터 없는 날은 `"-"` 반환 → 방어 처리 필요
 - 당일(dpr1)은 농수산물의 경우 저녁 전까지 `"-"`인 경우 많음 → dpr2 폴백 적용
 - `https://` 엔드포인트는 구형 SSL → `ssl.SSLContext` + `SECLEVEL=0` 필요
@@ -99,26 +99,29 @@ Week 7+ (AI 예측)         ░░░░░░░░░░   0%
 | 200 | Wrong Parameters | 파라미터 점검 |
 | 900 | Unauthenticated request | cert_key / cert_id 잘못됨 |
 
-### 호출 예시
+---
 
-```
-http://www.kamis.or.kr/service/price/xml.do?
-  action=dailyPriceByCategoryList
-  &p_product_cls_code=01
-  &p_item_category_code=200
-  &p_country_code=1101
-  &p_regday=2026-04-28
-  &p_convert_kg_yn=N
-  &p_cert_key={KEY}
-  &p_cert_id={ID}
-  &p_returntype=json
-```
+## 🌦 기상청 API 명세 (Week 3 도입 예정)
+
+### 사용 API: 중기예보 (10일치) + 단기예보 (3일치, 보강용)
+
+- **공급처**: 공공데이터포털 (data.go.kr)
+- **라이선스**: 공공누리 1유형 (출처표시) — 상업적 이용 가능
+- **신청 방법**: 공공데이터포털 → 기상청_중기예보 조회서비스 → 활용신청
+
+### 활용 데이터
+- **중기육상예보**: 4~10일 후 일별 강수확률, 날씨 상태
+- **중기기온예보**: 4~10일 후 일별 최저/최고 기온
+- **단기예보** (보강): 1~3일 후 시간 단위 정밀 예보
+- **지역**: 서울(서울지방기상청 코드) 1차, 추후 확장
+
+### 호출 빈도
+- 매일 06:30 (KAMIS 수집 직후) 1회 호출
+- DB 캐시 (`weather_forecast` 테이블) → 사용자 요청 시 DB만 조회
 
 ---
 
-## 🗂 KAMIS 코드 — 확정된 품목 20종
-
-> 실제 API 호출로 검증된 코드 (2026-04-28 기준)
+## 🗂 KAMIS 코드 — 확정된 품목 20종 (실제 검증)
 
 | code (내부키) | 품목명 | category_code | item_code | kind_code | rank | 단위 |
 |--------------|--------|--------------|-----------|-----------|------|------|
@@ -134,7 +137,7 @@ http://www.kamis.or.kr/service/price/xml.do?
 | zucchini | 애호박 | 200 | 224 | 01 | 상품 | 1개 |
 | apple | 사과 | 400 | 411 | 05 | 상품 | 10개 |
 | pear | 배 | 400 | 412 | 01 | 상품 | 10개 |
-| mandarin | 감귤 | 400 | 413 | 01 | 상품 | 10개 (비시즌 시 데이터 없음) |
+| mandarin | 감귤 | 400 | 413 | 01 | 상품 | 10개 (비시즌) |
 | beef_sirloin | 소고기(한우 등심) | 500 | 4301 | 22 | 1등급 | 100g |
 | pork_belly | 돼지고기(삼겹살) | 500 | 4304 | 27 | 삼겹살 | 100g |
 | chicken | 닭고기 | 500 | 9901 | 99 | 육계(kg) | 1kg |
@@ -145,95 +148,150 @@ http://www.kamis.or.kr/service/price/xml.do?
 
 ---
 
-## ✅ Week 1 상세 진행
+## ✅ Week 1 (MVP) — 완료
 
-### Phase 0: 준비 ✅ 완료
+### Phase 0~7 모두 완료
 
-- [x] KAMIS Open API 신청 → cert_key + cert_id 발급 수령
-- [x] GitHub 레포 생성 (eolmani, private)
-- [x] Python 3.12 + uv 환경 셋업
-- [x] FastAPI 기본 프로젝트 (`app/main.py`)
-- [x] `.gitignore` Python용 정비
-- [x] 첫 커밋 + 푸시
+- [x] **Phase 0: 준비** — KAMIS API 신청, GitHub 레포, Python+uv 셋업
+- [x] **Phase 1: 환경** — Docker PostgreSQL, .env, config, database
+- [x] **Phase 2: 데이터 탐색** — KAMIS 명세 분석, SSL 해결, 코드 매핑 완료, kamis_client 구현
+- [x] **Phase 3: 도메인 모델** — Item, PriceHistory, KAMIS 매핑 컬럼, 시드 20종
+- [x] **Phase 4: 백엔드 API** — `/api/prices/today`, Pydantic 스키마, 변동률 계산
+- [x] **Phase 5: 데이터 수집** — kamis_client 본 구현, collect_prices, APScheduler 06:00 KST
+- [x] **Phase 6: 프론트** — Tailwind, 카테고리 섹션, 변동률 배지, 모바일 반응형
+- [x] **Phase 7: 배포** — Dockerfile, Railway 배포, 도메인 발급, Public 전환
+- [x] **추가**: 30일 백필 (399건), 오늘의 특가 TOP5
 
-### Phase 1: 환경 구성 ✅ 완료
+---
 
-- [x] PostgreSQL Docker 컨테이너 띄우기 (`docker-compose.yml`)
-- [x] `.env` + `.env.example` 파일 작성
-- [x] `app/config.py` (pydantic-settings)
-- [x] `app/database.py` (SQLAlchemy 엔진/세션)
-- [x] `/health/db` 엔드포인트로 DB 연결 확인
+## 🟡 Week 2 — 진행 중
 
-### Phase 2: 데이터 탐색 ✅ 완료
+### Phase 8: 30일 그래프 (Chart.js)
 
-- [x] KAMIS API 명세 분석 (`dailyPriceByCategoryList` 액션 확정)
-- [x] 응답 구조 파악 (dpr1~dpr7 시계열, 실제 필드명 `item_code`/`kind_code`)
-- [x] 부류/품목/지역 코드 체계 파악 (`data/농축수산물 품목 및 등급 코드표.xlsx`)
-- [x] cert_id 확인 (숫자 ID, 이메일 아님)
-- [x] SSL 문제 진단 및 해결 (`SECLEVEL=0` 레거시 컨텍스트)
-- [x] `scripts/test_kamis.py` 작성 및 전 카테고리 실제 호출 성공
-- [x] 품목별 item_code / kind_code / rank 매핑 완료 (위 표 참조)
-- [x] `kamis_client.py` 본 구현 완료
+- [x] `app/api/prices.py`에 `/api/prices/{item_code}/history` 엔드포인트 추가
+- [x] `app/templates/item_detail.html` 신규 페이지 (품목 클릭 시)
+- [x] Chart.js 라인 차트 구현 (날짜 X축, 가격 Y축)
+- [x] 평년 가격 점선 표시 (dpr7 기준) — avg_year_price 수집 후 자동 표시
+- [ ] 메인 카드에 미니 스파크라인 추가 (50px 높이) — 선택사항, 추후
 
-### Phase 3: 도메인 모델 ✅ 완료
+### Phase 9: 메인 카피 + 데이터 출처 라벨링
 
-- [x] Alembic 초기화 및 마이그레이션 2회 적용
-- [x] `Item` 모델: `id`, `code`, `name`, `category`, `unit` + KAMIS 매핑 4개 컬럼
-  - `kamis_category_code`, `kamis_item_code`, `kamis_kind_code`, `kamis_rank`
-- [x] `PriceHistory` 모델: `item_id`, `price`, `recorded_date`, `source` + UniqueConstraint
-- [x] 시드 데이터 20종 (실제 KAMIS 코드 기반으로 전면 재작성)
+- [x] 헤더 슬로건 수정 — "오늘 사과 얼마니? 다음 주에는 얼마니?"
+- [x] 각 품목 카드에 "전국 평균" 라벨 추가
+- [x] Footer에 데이터 출처 명시 강화 ("KAMIS 도소매 조사 평균, 마트 가격과 다를 수 있음")
+- [x] 요약 배너에 "KAMIS 도소매 조사 평균 · 트렌드 지표" 추가
 
-### Phase 4: 백엔드 API ✅ 완료
+### Phase 10: 신호등 + 통합 카드
 
-- [x] `GET /api/prices/today` 엔드포인트
-- [x] Pydantic 응답 스키마 (`PriceItem`, `PricesTodayResponse`)
-- [x] 품목별 최신 날짜 기준 조회 (축산물/농수산물 날짜 혼재 처리)
-- [x] 7일/30일 변동률 계산 (DB 조회 기반)
-- [x] Swagger UI (`/docs`) 확인
+- [x] `app/services/signal_service.py` 신규
+  - 가중치 로직: 평년 50% + 1개월 30% + 1주일 20% (평년 없으면 정규화)
+  - 종합 점수 ≤ -5% → 🟢 / -5%~+5% → 🟡 / ≥ +5% → 🔴
+- [x] 메인 카드 신호등 이모지 표시
+- [x] 품목 카드 클릭 → 상세 페이지 이동
+- [x] Item.avg_year_price 컬럼 추가 + 마이그레이션 + 매일 수집
+- [ ] 절약금액 표시 ("1박스 사면 약 X원 절약") — Week 3
+- [ ] 모바일 카드 탭 펼침 — Week 3
 
-### Phase 5: 데이터 수집 ✅ 완료
+### Phase 11: 시즌 대량구매 캘린더
 
-- [x] `kamis_client.py` 본 구현
-  - `fetch_category()`: 부류별 소매가 조회
-  - `find_item_row()`: item_code + kind_code + rank 3중 매핑
-  - `extract_price_and_date()`: dpr1 없으면 dpr2(어제)로 폴백
-  - SSL: `PROTOCOL_TLS_CLIENT` + `SECLEVEL=0` 커스텀 컨텍스트
-- [x] `collect_prices()` 완성
-  - 카테고리 5회 호출로 전 품목 커버 (API 호출 최소화)
-  - PostgreSQL upsert (`ON CONFLICT DO UPDATE`)
-- [x] APScheduler `AsyncIOScheduler` 매일 06:00 Asia/Seoul
-- [x] FastAPI `lifespan`에 스케줄러 시작/종료 연결
-- [x] **수동 실행 결과: 19/20건 저장 성공** (감귤 비시즌 제외)
-- [ ] 초기 데이터 백필 (지난 7~30일) — 배포 후 진행
+- [ ] 월별 인사이트 데이터 (수동 작성, JSON 또는 DB)
+  - 1~12월 각각 추천 품목 + 이유
+- [ ] `app/templates/partials/season_calendar.html`
+- [ ] 메인 페이지에 "이번 달 추천 구매" 섹션
+- [ ] 11월 김장 시즌 강조 (다가오면 자동 부각)
 
-### Phase 6: 프론트 ✅ 완료
+---
 
-- [x] `app/templates/base.html` — Tailwind CDN, Chart.js CDN, sticky 헤더
-- [x] `app/templates/index.html`
-  - 카테고리별 섹션 + 이모지
-  - 품목 카드: 이름, 단위, 가격, ▲▼ 변동률 배지
-  - 데이터 없을 때 안내 화면
-  - 모바일 반응형 (`grid sm:grid-cols-2`)
-- [x] Footer (KAMIS 출처 표시)
-- [ ] Chart.js 7일 변동 그래프 (데이터 7일 쌓이면 추가)
+## ⬜ Week 3 — 대기
 
-### Phase 7: 배포 ✅ 완료
+### Phase 12: 기상청 API 연동
 
-- [x] `Dockerfile` 작성 (빌드 검증 완료)
-- [x] Railway 가입 / GitHub 연동
-- [x] 환경변수 등록 (KAMIS 키, DB URL)
-- [x] 배포 후 동작 확인 — Uvicorn 정상 기동 확인
-- [x] Railway 도메인 발급: https://eolmani-production.up.railway.app
-- [ ] GitHub README에 라이브 URL 추가
-- [ ] **레포 Public 전환**
+- [ ] 공공데이터포털에서 기상청 중기예보 API 신청
+- [ ] `scripts/test_kma.py` 작성 → 응답 구조 파악
+- [ ] `app/services/kma_client.py` 작성
+- [ ] `WeatherForecast` 모델 + 마이그레이션
+- [ ] APScheduler에 매일 06:30 날씨 수집 추가
+
+### Phase 13: 날씨 → 가격 영향 룰
+
+- [ ] `WeatherImpactRule` 모델
+- [ ] 사전 정의 룰 시드 (10~20개)
+  - 한파/폭염/폭우/장마/태풍 등
+  - 영향 받는 품목 + 예상 변동률
+- [ ] `app/services/weather_impact_service.py`
+  - 날씨 예보 + 룰 매칭 → "다음 주 한파 → 배추 +15%" 산출
+
+### Phase 14: 주간 날씨 카드
+
+- [ ] `app/templates/partials/weather_strip.html`
+- [ ] 가로 스크롤 (날씨 앱 스타일, 일~토 7일)
+- [ ] 각 카드: 날짜, 아이콘, 기온, 영향 받는 품목 ↑↓ 표시
+
+### Phase 15: 일일 브리핑 카드
+
+- [ ] `app/services/briefing_service.py`
+  - 룰로 데이터 추출 (날씨 + 가격 변동 TOP3 + 영향 받을 품목)
+  - GPT-4o-mini로 자연스러운 문장 생성
+  - 일 1회 호출 + DB 캐싱
+- [ ] `DailyBrief` 모델 (캐시 테이블)
+- [ ] `app/templates/partials/daily_brief.html`
+- [ ] 메인 최상단에 표시
+
+### Phase 16: 행동유도 메시지 강화
+
+- [ ] 신호등 카드의 "행동유도" 섹션을 날씨/시즌과 연계
+- [ ] 예: "다음 주 한파 예보 → 1~2일 내 구매 권장"
+
+---
+
+## ⬜ Week 4~5 — 공산품 별도 섹션
+
+### Phase 17: 참가격 API 연동
+
+- [ ] 공공데이터포털에서 참가격 데이터 신청
+- [ ] `app/services/chamga_client.py`
+- [ ] `CommodityItem`, `CommodityPrice` 모델
+
+### Phase 18: 공산품 페이지
+
+- [ ] `/commodities` 라우트
+- [ ] 마트별 비교 카드 (이마트/홈플러스/롯데마트)
+- [ ] 최저가 마트 강조
+
+### Phase 19: 통합 네비게이션
+
+- [ ] 메인 페이지에 "농수산물 / 공산품" 탭
+- [ ] 데이터 출처 명확히 분리 표시
+
+---
+
+## ⏸️ 보류 중인 기능
+
+다음 기능들은 정체성/우선순위 재검토 결과 보류 (사용자 모이거나 데이터 누적 시 재검토):
+
+| 기능 | 보류 사유 | 재검토 시점 |
+|------|---------|-----------|
+| **가격 알림 (이메일 → 카톡)** | 회원가입 동기 부족, MVP 안정화 우선 | 사용자 100명+ |
+| **영수증 OCR** | 사용자 1,000명 모여야 데이터 의미 있음 | 사용자 1,000명+ |
+| **개인화 CPI** | 영수증 데이터 의존 | OCR 도입 후 |
+| **슈링크플레이션 감지** | 가공식품 이슈 (현재 농수산물) | 공산품 섹션 안정화 후 |
+| **AI 가격 예측 (ML)** | 룰 기반(Week 3)이 부족해질 때 도입 | 1년 데이터 누적 후 |
+| **쿠팡 파트너스** | 사용자 신뢰 안정화 후 | 사용자 1,000명+ |
+| **레시피 기능** | 데이터 갭(가공식품 가격 부족), 본질에서 벗어남 | 제거 (재검토 안 함) |
+
+### 카카오 알림 도입 시 방향 (참고)
+- **1단계**: 이메일 (무료, 즉시)
+- **2단계**: 카카오 "나에게 보내기" API — 무료, 사업자등록 불필요, 한국 사용자 친화
+- **3단계**: 카카오톡 채널 친구톡 — 사용자 1,000명+ 시, 비용 발생 (15~23원/건)
+- 알림톡(공식)은 사업자등록 + 딜러사 계약 필요 → 도입 부담 큼
 
 ---
 
 ## 📋 다음 액션 (Top 3)
 
-1. **Chart.js 그래프** — 7일치 데이터 쌓이면 품목별 가격 변동 그래프 추가 (Week 2)
-2. **가격 캘린더 + 제철 정보** — 1년치 데이터 누적 후 월별 평균 그래프, 최저가 시즌 안내 (Week 5~6)
-3. **가격 알림** — 관심 품목 즐겨찾기 후 목표 가격 도달 시 이메일 알림 (Week 3)
+1. **30일 라인 차트 (Chart.js)** — 백필 완료된 데이터로 즉시 가능
+2. **메인 카피 수정 + KAMIS 출처 라벨링** — 친구 피드백 직빵 반영, 1시간 작업
+3. **신호등 + 통합 카드 디자인** — 정체성 확장의 핵심 UI 변경
 
 ---
 
@@ -244,17 +302,31 @@ http://www.kamis.or.kr/service/price/xml.do?
 | 2026-04-27 | 프로젝트명 "얼마니" 확정 | 가격을 묻는 본질적 질문, 모든 기능을 하나로 묶는 컨셉 |
 | 2026-04-27 | Java/Spring Boot → Python/FastAPI 전환 | 사용자 주력 언어가 Python, 데이터/AI 기능에 더 적합 |
 | 2026-04-27 | 비상업 무료 서비스로 운영 | KAMIS 등 공공 데이터 라이선스 부담 회피, 신뢰 기반 |
-| 2026-04-27 | GitHub 레포 처음엔 Private | 시크릿 실수 방어, MVP 완성 후 Public 전환 예정 |
+| 2026-04-27 | GitHub 레포 처음엔 Private | 시크릿 실수 방어, MVP 완성 후 Public 전환 |
 | 2026-04-27 | 패키지 관리는 uv 채택 | 빠르고 표준화 추세, pip/poetry 대비 우수 |
 | 2026-04-27 | Flask 대신 FastAPI 채택 | 자동 API 문서, Pydantic 타입 안전, async, 취업 가치 |
-| 2026-04-27 | psycopg2 대신 psycopg3 (`psycopg[binary]`) | 신버전, 성능/기능 우수 |
+| 2026-04-27 | psycopg2 대신 psycopg3 | 신버전, 성능/기능 우수 |
 | 2026-04-28 | `dailyPriceByCategoryList` 액션 채택 | 한 번 호출로 7개 시점 시계열 수신, API 효율 최적 |
 | 2026-04-28 | 소매가 (`p_product_cls_code=01`) 우선 | 소비자 체감 물가가 목표 |
 | 2026-04-28 | 서울(`1101`) 기준 | 데이터 가장 풍부, 도·소매 모두 지원 |
 | 2026-04-28 | dpr1 → dpr2 폴백 | 당일 미수집 시 유효 가격 항상 표시 |
 | 2026-04-28 | PostgreSQL upsert (ON CONFLICT) | 중복 수집 방어, 재실행 안전 |
-| 2026-04-28 | 품목별 최신 날짜 조회 | 축산물(당일)/농수산물(전일) 날짜 혼재 문제 해결 |
-| 2026-04-28 | SSL SECLEVEL=0 우회 | KAMIS 서버 구형 TLS로 인한 핸드셰이크 실패 해결 |
+| 2026-04-28 | 품목별 최신 날짜 조회 | 축산물(당일)/농수산물(전일) 날짜 혼재 해결 |
+| 2026-04-28 | SSL SECLEVEL=0 우회 | KAMIS 서버 구형 TLS 핸드셰이크 실패 해결 |
+| 2026-04-28 | Public 전환 + 30일 백필 + 오늘의 특가 TOP5 | MVP 마무리, 즉시 가치 제공 |
+| **2026-04-28** | **레시피 기능 제거** | 데이터 갭(가공식품 부족), 본질("타이밍")에서 벗어남, 친구 피드백 |
+| **2026-04-28** | **정체성 확장: 가격 표시 → 구매 타이밍 가이드** | 친구 피드백 — "마트별 가격 비교가 아니라 언제 살지가 진짜 가치" |
+| **2026-04-28** | **신호등 판단: 가중치 방식** | 평년 50% + 1개월 30% + 1주일 20%. 평년이 가장 중요한 기준선 |
+| **2026-04-28** | **통합 카드 4요소** | 숫자(신뢰) + 신호등(직관) + 절약금액(임팩트) + 행동유도(다음 액션) |
+| **2026-04-28** | **시즌 대량구매 캘린더 도입** | 친구 피드백 — 김장/장아찌/제철 한국 식문화 정확히 타격 |
+| **2026-04-28** | **기상청 중기예보 API 채택** | 무료, 공공누리 1유형, 7일 커버 가능 |
+| **2026-04-28** | **날씨 영향 매핑: 룰 테이블 우선** | Week 3엔 사전 정의 룰로 시작, ML(Week 7+)은 1년 데이터 후 |
+| **2026-04-28** | **일일 브리핑: 룰 + GPT-4o-mini** | 데이터는 룰로, 문장만 GPT로. 비용 월 $0.05 |
+| **2026-04-28** | **공산품 별도 섹션 (Week 4~5)** | 농수산물(타이밍)과 공산품(마트 비교)은 다른 영역, 통합 X |
+| **2026-04-28** | **공산품 데이터: 참가격 우선** | 공식 공공데이터, 라이선스 깨끗, 마트별 가격 |
+| **2026-04-28** | **가격 알림 후순위 보류** | MVP 안정화 + 차별화 기능(신호등/날씨) 우선 |
+| **2026-04-28** | **카톡 알림 방향: 카카오 "나에게 보내기"** | 무료, 사업자등록 불필요, 한국 사용자 친화 |
+| **2026-04-28** | **영수증/CPI/슈링크/AI예측 보류** | 사용자/데이터 누적 후 재검토. MVP 직후엔 차별화에 집중 |
 
 ---
 
@@ -263,52 +335,72 @@ http://www.kamis.or.kr/service/price/xml.do?
 | 항목 | 상태 | 메모 |
 |------|------|------|
 | 감귤 데이터 없음 | 🟡 비시즌 | 4~9월 KAMIS 미수집. 품목 등록됨, 시즌 복귀 시 자동 수집 |
-| 변동률 null | 🟡 데이터 누적 대기 | 7일/30일치 쌓이면 자동 표시 (약 1주일 후) |
-| Chart.js 그래프 없음 | 🟡 데이터 대기 | 7일치 수집 후 구현 예정 |
+| 메인 페이지 데이터 정체성 모호 | 🔴 진행 중 | 친구 피드백: "마트 가격으로 오해". Week 2 카피 수정으로 해결 예정 |
+| Chart.js 그래프 없음 | 🟡 작업 예정 | 30일 백필 완료, Week 2에 차트 페이지 구현 |
 
 ---
 
 ## 🤝 AI 협업 안내
 
-이 프로젝트를 다른 AI와 같이 작업할 때:
+이 프로젝트를 다른 AI(Claude Code, Cursor, ChatGPT 등)와 같이 작업할 때:
 
-1. **`PROJECT.md`** — 프로젝트 전체 그림
+1. **`PROJECT.md`** — 프로젝트 전체 그림 (v1.2 친구 피드백 반영)
 2. **`PROGRESS.md`** (이 파일) — 현재 진행도 + KAMIS API 명세 + 품목 코드 표
-3. **`REPORT.md`** — 전체 개발 진행 보고서 (상세 이력)
+3. **`REPORT.md`** — 전체 개발 진행 보고서 (있는 경우)
 4. **`data/농축수산물 품목 및 등급 코드표.xlsx`** — KAMIS 전체 코드 참조용
 
 ### 컨텍스트 프롬프트 템플릿
 
 ```
-나는 "얼마니"라는 식료품 가격 추적 서비스를 만들고 있어.
-PROJECT.md는 전체 기획서, PROGRESS.md는 현재 진행도 + KAMIS API 명세야.
+나는 "얼마니"라는 식료품 가격 추적 + 구매 타이밍 가이드 서비스를 만들고 있어.
+PROJECT.md(v1.2)는 전체 기획서, PROGRESS.md는 진행도 + KAMIS API 명세야.
 
 현재 상태:
-- Phase 0~6 완료 (KAMIS 실데이터 19종 수집 중, 매일 06:00 자동 수집)
-- Phase 7 (Railway 배포) 진행 예정
+- Week 1 MVP 라이브 (https://eolmani-production.up.railway.app)
+- 친구 피드백 받아 정체성 확장 중 (가격 표시 → 구매 타이밍 가이드)
+- 레시피 제거, 신호등/시즌 캘린더/날씨 예측 추가 결정
+- Week 2 진행: 30일 그래프, 신호등 통합 카드, 메인 카피 수정
 
-기술 스택: Python 3.12, FastAPI, PostgreSQL, SQLAlchemy 2.0, uv, APScheduler, Jinja2
+기술 스택: Python 3.12, FastAPI, PostgreSQL, SQLAlchemy 2.0, uv, APScheduler, Jinja2, Chart.js
+```
+
+### Claude Code용 다음 작업 프롬프트
+
+```
+PROJECT.md, PROGRESS.md 읽고 컨텍스트 잡아줘.
+
+다음 작업: Phase 8 (30일 그래프 Chart.js)
+1. /api/prices/{item_code}/history 엔드포인트 추가 (최근 30일)
+2. app/templates/item_detail.html 신규 페이지
+3. Chart.js 라인 차트 (날짜 X축, 가격 Y축, 평년 점선)
+4. 메인 카드에서 품목 클릭 시 상세 페이지로 이동
+5. 끝나면 PROGRESS.md Phase 8 체크박스 업데이트해줘
 ```
 
 ---
 
 ## 📝 변경 로그
 
-### 2026-04-28
+### 2026-04-28 (오후) — 정체성 확장 v1.2
+- **친구 피드백 반영**: 정체성을 "가격 표시"에서 "**구매 타이밍 가이드**"로 확장
+- 핵심 기능 재정리: **레시피 제거**, 신호등/시즌 캘린더/날씨 예측/일일 브리핑 추가
+- 기능 보류 결정: 가격 알림(후순위), 영수증 OCR / 개인화 CPI / 슈링크플레이션 / AI 예측 / 쿠팡 파트너스 (보류)
+- 공산품 별도 섹션 결정 (Week 4~5, 참가격 데이터)
+- 카톡 알림 방향: 카카오 "나에게 보내기" API (무료, 사업자등록 불필요)
+- 결정 로그 12개 추가, 알려진 이슈 업데이트
+
+### 2026-04-28 (오전) — Week 1 MVP 완성
 - Phase 2 완료: API 키 수령, SSL 해결, 실제 호출 성공, 코드 매핑 완료
-- Phase 3 업데이트: Item 모델에 KAMIS 매핑 컬럼 4개 추가, 시드 데이터 전면 재작성
-- Phase 5 완료: kamis_client.py 본 구현, collect_prices() 완성, 19건 수집 성공
-- KAMIS 명세 섹션: 실제 확인된 필드명(`item_code`, `kind_code`)으로 정정
-- 품목 코드 표: 실제 검증된 20종 코드 전면 교체
-- 결정 로그 7개 추가 (SSL 우회, 폴백 전략, upsert 등)
-- REPORT.md 생성 (전체 개발 보고서)
-- **Phase 7 완료**: Railway 배포 성공, 도메인 발급 (eolmani-production.up.railway.app)
-- Railway 에러 2건 수정: psycopg2 드라이버 → psycopg3 URL 변환, app/static 빈 디렉토리 .gitkeep 추가
-- 30일치 데이터 백필 완료 (scripts/backfill.py, 399건)
-- **오늘의 특가 TOP5** 기능 추가 (7일 대비 하락폭 큰 순)
+- Phase 3 업데이트: Item 모델 KAMIS 매핑 컬럼 4개, 시드 데이터 재작성
+- Phase 5 완료: kamis_client 본 구현, collect_prices 완성, 19건 수집 성공
+- Phase 7 완료: Railway 배포 성공, 도메인 발급
+- 30일치 데이터 백필 완료 (399건)
+- "오늘의 특가 TOP5" 기능 추가
 - 레포 Public 전환 완료
-- 로드맵에 가격 캘린더 + 제철 정보 추가 (Week 5~6)
-- 진행률 100% (Week 1 MVP 완성)
+- KAMIS 명세 섹션 정정 (실제 필드명 `item_code`, `kind_code`)
+- 품목 코드 표 검증된 20종으로 교체
+- 결정 로그 7개 추가 (SSL 우회, 폴백, upsert 등)
+- REPORT.md 생성
 
 ### 2026-04-27
 - 프로젝트 시작, 기획서 v1.0(Java) → v1.1(Python) 전환
