@@ -24,6 +24,10 @@ ITEMS = [
     {"code": "sweet_potato",   "name": "고구마",       "category": "곡물", "unit": "1kg",   "kamis_category_code": "100", "kamis_item_code": "151",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "potato",         "name": "감자",         "category": "곡물", "unit": "100g",  "kamis_category_code": "100", "kamis_item_code": "152",  "kamis_kind_code": "04", "kamis_rank": "상품"},
     {"code": "bean",           "name": "콩",           "category": "곡물", "unit": "500g",  "kamis_category_code": "100", "kamis_item_code": "141",  "kamis_kind_code": "01", "kamis_rank": "상품"},
+    # ── 버섯 (category 300 특용작물) ────────────────────────────────
+    {"code": "oyster_mushroom",  "name": "느타리버섯", "category": "채소", "unit": "100g", "kamis_category_code": "300", "kamis_item_code": "315",  "kamis_kind_code": "00", "kamis_rank": "상품"},
+    {"code": "enoki_mushroom",   "name": "팽이버섯",   "category": "채소", "unit": "150g", "kamis_category_code": "300", "kamis_item_code": "316",  "kamis_kind_code": "00", "kamis_rank": "상품"},
+    {"code": "king_mushroom",    "name": "새송이버섯", "category": "채소", "unit": "100g", "kamis_category_code": "300", "kamis_item_code": "317",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     # ── 채소 (category 200) ─────────────────────────────────────────
     {"code": "cabbage",     "name": "배추",            "category": "채소", "unit": "1포기", "kamis_category_code": "200", "kamis_item_code": "211",  "kamis_kind_code": "06", "kamis_rank": "상품"},
     {"code": "radish",      "name": "무",              "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "231",  "kamis_kind_code": "06", "kamis_rank": "상품"},
@@ -41,7 +45,7 @@ ITEMS = [
     # ── 과일 (category 400) ─────────────────────────────────────────
     {"code": "apple",       "name": "사과",            "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "411",  "kamis_kind_code": "05", "kamis_rank": "상품"},
     {"code": "pear",        "name": "배",              "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "412",  "kamis_kind_code": "01", "kamis_rank": "상품"},
-    {"code": "mandarin",    "name": "감귤",            "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "413",  "kamis_kind_code": "01", "kamis_rank": "상품"},  # 비시즌 시 데이터 없음
+    {"code": "mandarin",    "name": "감귤",            "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "415",  "kamis_kind_code": "01", "kamis_rank": "상품"},  # 노지 감귤. 비시즌(4~9월) 데이터 없음
     {"code": "strawberry",  "name": "딸기",            "category": "과일", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "226",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     # ── 축산 (category 500) ─────────────────────────────────────────
     # 한우 그룹: 주요 4개 부위 (모두 100g, 1등급 기준)
