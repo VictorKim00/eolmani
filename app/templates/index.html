@@ -23,6 +23,26 @@
   </div>
 </div>
 
+<!-- 이번 달 추천 구매 -->
+{% if season.items %}
+<section class="mb-8">
+  <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+    📅 {{ season.month }}월 추천 구매 — 지금 사두면 이득
+  </h2>
+  <div class="bg-white rounded-xl border border-emerald-100 shadow-sm divide-y divide-gray-50">
+    {% for s in season.items %}
+    <div class="px-4 py-3 flex items-start gap-3">
+      <span class="text-xl mt-0.5">{{ s.emoji }}</span>
+      <div>
+        <p class="font-semibold text-gray-800 text-sm">{{ s.name }}</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ s.reason }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <!-- 오늘의 특가 TOP 5 -->
 {% if deals %}
 <section class="mb-8">
