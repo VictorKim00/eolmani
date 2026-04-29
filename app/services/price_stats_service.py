@@ -43,7 +43,7 @@ def get_month_vs_annual(db: Session, item_code: str, month: int) -> dict | None:
         .where(PriceHistory.source == "kamis")
     ).scalar()
 
-    if not month_avg or not annual_avg or month_days < 10:
+    if month_avg is None or annual_avg is None or month_days < 10:
         return None
 
     month_avg = float(month_avg)

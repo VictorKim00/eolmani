@@ -2,20 +2,21 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.prices import router as prices_router
+from app.config import settings
 from app.database import get_db
 from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal, get_action
-from app.services.weather_client import fetch_forecast
+from app.services.weather_client import WEEKDAY_KO, fetch_forecast
 from app.services.weather_impact_service import get_impacts, get_week_summary
 
 CATEGORY_EMOJI: dict[str, str] = {
@@ -25,8 +26,6 @@ CATEGORY_EMOJI: dict[str, str] = {
     "축산": "🥩",
     "수산": "🐟",
 }
-
-_KO_DAYS = ["월", "화", "수", "목", "금", "토", "일"]  # Python weekday() 0=Mon → index
 
 
 @asynccontextmanager
@@ -69,6 +68,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
     days_since_sunday = (today_date.weekday() + 1) % 7  # 일=0, 월=1, ..., 토=6
     week_start = today_date - timedelta(days=days_since_sunday)
 
+    # past_days 포함해 전체 반환 → forecast_future는 오늘 이후 7일까지 포함
     forecast_full = await fetch_forecast(days=7, past_days=days_since_sunday)
     forecast_future = [d for d in forecast_full if d["date"] >= today_date.strftime("%Y-%m-%d")]
     impacts = get_impacts(forecast_future)
@@ -84,7 +84,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         else:
             entry = {
                 "date": d_str,
-                "weekday": _KO_DAYS[d.weekday()],
+                "weekday": WEEKDAY_KO[d.weekday()],
                 "is_past": True,
                 "is_today": False,
                 "temp_max": None,
@@ -130,10 +130,10 @@ async def index(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/items/{item_code}")
-def item_detail(item_code: str, request: Request, db: Session = Depends(get_db)):
+async def item_detail(item_code: str, request: Request, db: Session = Depends(get_db)):
     history = get_item_history(db, item_code)
     if history is None:
-        return templates.TemplateResponse(request, "index.html", {"error": "품목 없음"}, status_code=404)
+        raise HTTPException(status_code=404, detail="품목을 찾을 수 없습니다")
 
     signal = compute_signal(history.change_avg, history.change_30d, history.change_7d)
 
@@ -167,8 +167,11 @@ def health():
 
 
 @app.post("/admin/collect")
-async def admin_collect():
+async def admin_collect(request: Request):
     """수동 가격 수집 트리거 (배포 직후 데이터 갱신용)."""
+    if settings.admin_secret:
+        if request.headers.get("X-Admin-Key", "") != settings.admin_secret:
+            raise HTTPException(status_code=401, detail="Unauthorized")
     from app.scheduler.price_collector import collect_prices
     await collect_prices()
     return {"status": "ok", "message": "수집 완료"}

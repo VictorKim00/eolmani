@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% macro change_badge(rate, label) %}
+{% if rate is none %}
+  <span class="text-xs text-gray-300">—</span>
+{% elif rate > 0 %}
+  <span class="text-xs font-medium text-red-500">▲{{ "%.1f"|format(rate) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
+{% elif rate < 0 %}
+  <span class="text-xs font-medium text-blue-500">▼{{ "%.1f"|format(rate|abs) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
+{% else %}
+  <span class="text-xs text-gray-400">— {{ label }}</span>
+{% endif %}
+{% endmacro %}
+
 {% block content %}
 
 {% if not categories %}
@@ -136,7 +148,7 @@
 {% for category, items in categories.items() %}
 <section class="mb-8">
   <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
-    {{ category_emoji[category] }} {{ category }}
+    {{ category_emoji.get(category, "🏷️") }} {{ category }}
   </h2>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -172,17 +184,5 @@
 {% endif %}
 
 {% endblock %}
-
-{% macro change_badge(rate, label) %}
-{% if rate is none %}
-  <span class="text-xs text-gray-300">—</span>
-{% elif rate > 0 %}
-  <span class="text-xs font-medium text-red-500">▲{{ "%.1f"|format(rate) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
-{% elif rate < 0 %}
-  <span class="text-xs font-medium text-blue-500">▼{{ "%.1f"|format(rate|abs) }}%<span class="text-gray-300 font-normal"> {{ label }}</span></span>
-{% else %}
-  <span class="text-xs text-gray-400">— {{ label }}</span>
-{% endif %}
-{% endmacro %}
 
 {% block scripts %}{% endblock %}

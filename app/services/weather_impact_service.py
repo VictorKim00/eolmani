@@ -16,11 +16,16 @@ class WeatherImpact:
 
 
 # 룰 테이블: 농업기술센터 자료 기반
+def _safe(d: dict, key: str, default=None):
+    v = d.get(key)
+    return default if v is None else v
+
+
 _RULES = [
     {
         "condition": "한파",
         "emoji": "🥶",
-        "check": lambda d: d["temp_min"] <= -5,
+        "check": lambda d: _safe(d, "temp_min", 0) <= -5,
         "items": ["배추", "시금치", "대파", "무"],
         "direction": "up",
         "reason": "한파로 노지 채소 수확 차질 우려",
@@ -28,7 +33,7 @@ _RULES = [
     {
         "condition": "추위",
         "emoji": "🌨️",
-        "check": lambda d: -5 < d["temp_min"] <= 2,
+        "check": lambda d: -5 < _safe(d, "temp_min", 0) <= 2,
         "items": ["시금치", "대파"],
         "direction": "up",
         "reason": "저온으로 잎채소 공급 감소 가능성",
@@ -36,7 +41,7 @@ _RULES = [
     {
         "condition": "폭염",
         "emoji": "🔥",
-        "check": lambda d: d["temp_max"] >= 33,
+        "check": lambda d: _safe(d, "temp_max", 0) >= 33,
         "items": ["오이", "애호박", "시금치"],
         "direction": "up",
         "reason": "폭염으로 노지 채소 성장 저하",
@@ -44,7 +49,7 @@ _RULES = [
     {
         "condition": "강수",
         "emoji": "🌧️",
-        "check": lambda d: d["precip_prob"] >= 70 and d["weather_code"] >= 61,
+        "check": lambda d: _safe(d, "precip_prob", 0) >= 70 and _safe(d, "weather_code", 0) >= 61,
         "items": ["배추", "오이", "애호박"],
         "direction": "up",
         "reason": "강수로 노지 채소 출하 감소 가능성",
@@ -52,7 +57,7 @@ _RULES = [
     {
         "condition": "태풍·폭우",
         "emoji": "⛈️",
-        "check": lambda d: d["precip_prob"] >= 85 and d["weather_code"] >= 80,
+        "check": lambda d: _safe(d, "precip_prob", 0) >= 85 and _safe(d, "weather_code", 0) >= 80,
         "items": ["갈치", "고등어", "오징어"],
         "direction": "up",
         "reason": "강풍·파고로 어선 출항 제한 가능성",
@@ -84,9 +89,12 @@ def get_impacts(forecast: list[dict]) -> dict[str, list[WeatherImpact]]:
     return result
 
 
+_MAX_WEEK_SUMMARIES = 3
+
+
 def get_week_summary(forecast: list[dict]) -> list[str]:
     """
-    7일 예보에서 주목할 날씨 이슈를 요약 문장으로 반환 (최대 2개).
+    7일 예보에서 주목할 날씨 이슈를 요약 문장으로 반환 (최대 _MAX_WEEK_SUMMARIES개).
     일일 브리핑 카드용.
     """
     impacts = get_impacts(forecast)
@@ -103,7 +111,7 @@ def get_week_summary(forecast: list[dict]) -> list[str]:
                 summaries.append(
                     f"{day['weekday']}요일 {impact.condition} {impact.emoji} → {items_str} 가격 상승 우려"
                 )
-            if len(summaries) >= 2:
+            if len(summaries) >= _MAX_WEEK_SUMMARIES:
                 return summaries
 
     return summaries

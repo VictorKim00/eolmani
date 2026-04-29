@@ -80,7 +80,7 @@ async def fetch_forecast(days: int = 7, past_days: int = 0) -> list[dict]:
             daily = resp.json()["daily"]
 
         result = []
-        for i, date_str in enumerate(daily["time"][:days]):
+        for i, date_str in enumerate(daily["time"]):
             code = daily["weathercode"][i] or 0
             emoji, label = WEATHER_CODE_MAP.get(code, ("🌡️", "알 수 없음"))
             dt = datetime.strptime(date_str, "%Y-%m-%d")

@@ -20,7 +20,11 @@
       <p class="text-xs text-gray-400">{{ history.unit }} · KAMIS 전국 평균</p>
     </div>
     <div class="text-right">
+      {% if history.current_price > 0 %}
       <p class="text-2xl font-bold text-gray-900">{{ "{:,.0f}".format(history.current_price) }}원</p>
+      {% else %}
+      <p class="text-sm text-gray-400 mt-2">현재 데이터 없음</p>
+      {% endif %}
       <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold
         {% if signal == 'green' %}bg-emerald-50 text-emerald-700
         {% elif signal == 'red' %}bg-red-50 text-red-600
@@ -111,27 +115,32 @@
 {% endif %}
 
 <!-- 가격 추이 차트 -->
+{% if history.points|length > 0 %}
+{% set span_days = (history.points[-1].date - history.points[0].date).days %}
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
   <h2 class="text-sm font-semibold text-gray-500 mb-3">
-    {% if history.points|length > 0 %}
-      {% set span_days = (history.points[-1].date - history.points[0].date).days %}
-      {% if span_days > 60 %}최근 {{ span_days }}일 가격 추이{% else %}최근 30일 가격 추이{% endif %}
-    {% else %}가격 추이{% endif %}
+    최근 {{ span_days if span_days > 30 else 30 }}일 가격 추이
   </h2>
   <div class="relative" style="height: 220px;">
     <canvas id="priceChart"></canvas>
   </div>
   <p class="text-xs text-gray-300 mt-2 text-right">KAMIS 도소매 조사 평균 · 서울 기준</p>
 </div>
+{% else %}
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4 text-center py-8">
+  <p class="text-sm text-gray-400">가격 데이터가 아직 없습니다</p>
+</div>
+{% endif %}
 
 <!-- 데이터 요약 -->
 {% if history.points|length >= 2 %}
 {% set prices = history.points | map(attribute='price') | list %}
 {% set max_price = prices | max %}
 {% set min_price = prices | min %}
+{% set span_days = (history.points[-1].date - history.points[0].date).days %}
 <div class="grid grid-cols-3 gap-3 mb-4">
   <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-3 text-center">
-    <p class="text-xs text-gray-400 mb-1">30일 최고</p>
+    <p class="text-xs text-gray-400 mb-1">{{ span_days }}일 최고</p>
     <p class="text-sm font-bold text-red-500">{{ "{:,.0f}".format(max_price) }}원</p>
   </div>
   <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-3 text-center">
@@ -139,7 +148,7 @@
     <p class="text-sm font-bold text-gray-800">{{ "{:,.0f}".format(history.current_price) }}원</p>
   </div>
   <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-3 text-center">
-    <p class="text-xs text-gray-400 mb-1">30일 최저</p>
+    <p class="text-xs text-gray-400 mb-1">{{ span_days }}일 최저</p>
     <p class="text-sm font-bold text-blue-500">{{ "{:,.0f}".format(min_price) }}원</p>
   </div>
 </div>
@@ -148,6 +157,7 @@
 {% endblock %}
 
 {% block scripts %}
+{% if history.points|length > 0 %}
 <script>
   const labels = {{ chart_labels | tojson }};
   const prices = {{ chart_prices | tojson }};
@@ -220,4 +230,5 @@
     }
   });
 </script>
+{% endif %}
 {% endblock %}

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     kamis_cert_id: str = ""
     kamis_cert_key: str = ""
     kamis_base_url: str = "http://www.kamis.or.kr/service/price/xml.do"
+    admin_secret: str = ""  # /admin/collect 보호용. 비어있으면 인증 생략.
 
     @property
     def sqlalchemy_database_url(self) -> str:

@@ -5,15 +5,16 @@
 
 - **시작일**: 2026-04-27
 - **현재 주차**: Week 3 진행 중
-- **마지막 업데이트**: 2026-04-29
+- **마지막 업데이트**: 2026-04-29 (코드 리뷰·버그 수정 완료)
 - **라이브 URL**: https://eolmani-production.up.railway.app
 
 ---
 
 ## 🎯 현재 목표
 
-**Week 3 — 데이터 정확성 강화 + 행동유도 메시지**:
-날씨 예보 연동, 시즌 캘린더 실제 통계 연결, 신호등 정확도 수정, 구매 타이밍 추천 박스.
+**Week 3 마무리 + 코드 안정화**:
+날씨 연동·행동유도·시즌 통계 구현 완료. 코드 전수 리뷰로 17개 버그·이슈 수정.
+다음: Phase 15 (일일 브리핑) 또는 Week 4 (공산품 섹션) 진입.
 
 ---
 
@@ -22,7 +23,7 @@
 ```
 Week 1 (MVP)               ██████████  100%  ✅ 라이브
 Week 2 (신호등+그래프)      ██████████  100%  ✅ 완료
-Week 3 (날씨+행동유도)      ████████░░   80%  🟡 진행 중
+Week 3 (날씨+행동유도)      █████████░   92%  🟡 Phase 15(브리핑) 미완
 Week 4~5 (공산품)           ░░░░░░░░░░    0%
 보류 (가격 알림)            ░░░░░░░░░░    0%
 보류 (영수증 OCR)           ░░░░░░░░░░    0%
@@ -163,7 +164,7 @@ Week 4~5 (공산품)           ░░░░░░░░░░    0%
 
 ---
 
-## 🟡 Week 2 — 진행 중
+## ✅ Week 2 — 완료
 
 ### Phase 8: 30일 그래프 (Chart.js)
 
@@ -199,45 +200,55 @@ Week 4~5 (공산품)           ░░░░░░░░░░    0%
 
 ---
 
-## ⬜ Week 3 — 대기
+## 🟡 Week 3 — 진행 중 (92%)
 
-### Phase 12: 기상청 API 연동
+### Phase 12: 날씨 API 연동 ✅
 
-- [ ] 공공데이터포털에서 기상청 중기예보 API 신청
-- [ ] `scripts/test_kma.py` 작성 → 응답 구조 파악
-- [ ] `app/services/kma_client.py` 작성
-- [ ] `WeatherForecast` 모델 + 마이그레이션
-- [ ] APScheduler에 매일 06:30 날씨 수집 추가
+> 기상청 대신 Open-Meteo 채택 (API 키 불필요, 무료, 10일 예보).
 
-### Phase 13: 날씨 → 가격 영향 룰
+- [x] `app/services/weather_client.py` — Open-Meteo 클라이언트 (past_days 파라미터로 과거 포함)
+- [x] 이번 주 일~토 7일 날씨 조회
+- [x] 인메모리 1시간 캐시 (Railway 단일 인스턴스 기준 충분)
+- [ ] WeatherForecast DB 모델 — 보류 (인메모리 캐시로 충분)
+- [ ] APScheduler 날씨 수집 — 보류 (요청 시 실시간 조회가 더 단순)
 
-- [ ] `WeatherImpactRule` 모델
-- [ ] 사전 정의 룰 시드 (10~20개)
-  - 한파/폭염/폭우/장마/태풍 등
-  - 영향 받는 품목 + 예상 변동률
-- [ ] `app/services/weather_impact_service.py`
-  - 날씨 예보 + 룰 매칭 → "다음 주 한파 → 배추 +15%" 산출
+### Phase 13: 날씨 → 가격 영향 룰 ✅
 
-### Phase 14: 주간 날씨 카드
+- [x] `app/services/weather_impact_service.py` 구현
+- [x] 사전 정의 룰 5종 (한파/추위/폭염/강수/태풍·폭우)
+- [x] `get_impacts()` — 날짜별 영향 품목 매칭
+- [x] `get_week_summary()` — 주간 날씨 경보 요약 (최대 3개)
+- [ ] DB WeatherImpactRule 모델 — 보류 (코드 내 룰 테이블로 충분)
 
-- [ ] `app/templates/partials/weather_strip.html`
-- [ ] 가로 스크롤 (날씨 앱 스타일, 일~토 7일)
-- [ ] 각 카드: 날짜, 아이콘, 기온, 영향 받는 품목 ↑↓ 표시
+### Phase 14: 주간 날씨 카드 ✅
 
-### Phase 15: 일일 브리핑 카드
+- [x] 메인 페이지 인라인 구현 (일~토 가로 스크롤)
+- [x] 날짜·날씨 아이콘·기온·강수확률·영향 이모지 표시
+- [x] 과거 날짜 흐리게, 오늘 강조, 날씨 경보 주황 테두리
+- [x] Open-Meteo 출처 표시
+
+### Phase 15: 일일 브리핑 카드 ⬜
 
 - [ ] `app/services/briefing_service.py`
   - 룰로 데이터 추출 (날씨 + 가격 변동 TOP3 + 영향 받을 품목)
-  - GPT-4o-mini로 자연스러운 문장 생성
-  - 일 1회 호출 + DB 캐싱
+  - GPT-4o-mini로 자연스러운 문장 생성, 일 1회 호출 + DB 캐싱
 - [ ] `DailyBrief` 모델 (캐시 테이블)
-- [ ] `app/templates/partials/daily_brief.html`
-- [ ] 메인 최상단에 표시
+- [ ] 메인 최상단 카드에 표시
 
-### Phase 16: 행동유도 메시지 강화
+### Phase 16: 행동유도 메시지 ✅
 
-- [ ] 신호등 카드의 "행동유도" 섹션을 날씨/시즌과 연계
-- [ ] 예: "다음 주 한파 예보 → 1~2일 내 구매 권장"
+- [x] `get_action()` — 신호등+변동률+월별통계 기반 buy_now/buy_soon/neutral/wait
+- [x] 품목 상세 페이지 구매 타이밍 카드 (색상·아이콘 분기)
+- [ ] 날씨·시즌 연계 심화 — 보류 (Phase 15 브리핑과 함께 구현 예정)
+
+### 추가 완료 (Phase 미포함)
+
+- [x] 시즌 캘린더 실제 월별 통계 연동 (`enrich_season_picks`, `get_month_vs_annual`)
+- [x] 신호등 정확도 수정 — 메인↔상세 일치, `_price_near` 4일 윈도우
+- [x] dpr3/dpr5 기준가 매일 저장 → 30일 변동률 데이터 확보
+- [x] 데이터 희소 품목(쌀·콩) 365일 자동 확장
+- [x] 품목 상세 페이지 월별 통계 카드 + 구매 행동 추천
+- [x] 코드 전수 리뷰 (기본 + Opus 심층) → 17개 버그·이슈 수정 완료
 
 ---
 
@@ -286,9 +297,9 @@ Week 4~5 (공산품)           ░░░░░░░░░░    0%
 
 ## 📋 다음 액션 (Top 3)
 
-1. **30일 라인 차트 (Chart.js)** — 백필 완료된 데이터로 즉시 가능
-2. **메인 카피 수정 + KAMIS 출처 라벨링** — 친구 피드백 직빵 반영, 1시간 작업
-3. **신호등 + 통합 카드 디자인** — 정체성 확장의 핵심 UI 변경
+1. **변경사항 배포** — `git push` → Railway 자동 배포. 17개 버그 수정 반영
+2. **Phase 15: 일일 브리핑 카드** — GPT-4o-mini로 날씨+가격 요약 문장 생성 (Phase 13·14 기반이 갖춰진 상태)
+3. **Week 4 공산품 섹션 진입** — Phase 15 보류 시, 참가격 API 신청부터 시작
 
 ---
 
@@ -331,9 +342,125 @@ Week 4~5 (공산품)           ░░░░░░░░░░    0%
 
 | 항목 | 상태 | 메모 |
 |------|------|------|
-| 감귤 데이터 없음 | 🟡 비시즌 | 4~9월 KAMIS 미수집. 품목 등록됨, 시즌 복귀 시 자동 수집 |
-| 메인 페이지 데이터 정체성 모호 | 🔴 진행 중 | 친구 피드백: "마트 가격으로 오해". Week 2 카피 수정으로 해결 예정 |
-| Chart.js 그래프 없음 | 🟡 작업 예정 | 30일 백필 완료, Week 2에 차트 페이지 구현 |
+| 감귤 데이터 없음 | 🟡 비시즌 | 4~9월 KAMIS 미수집. 품목 등록됨, 시즌 복귀 시 자동 수집. 상세 페이지 진입 시 "현재 데이터 없음" 표시됨 |
+| N+1 쿼리 | 🟡 성능 | `get_today_prices`에서 품목 20개 × 2 = 40개 추가 쿼리. 현재 트래픽 무방, 규모 확장 시 최적화 필요 (P1) |
+| KAMIS SSL CERT_NONE | 🟡 보안 | KAMIS 서버 구형 TLS로 인증서 검증 비활성화. KAMIS 자체 한계라 수정 불가 (O5) |
+| 404 page 깨짐 | ✅ 수정 | HTTPException(404)으로 교체 (B1) |
+| "30일 최고/최저" 라벨 | ✅ 수정 | 실제 데이터 기간(span_days)으로 동적 표시 (B2) |
+| /admin/collect 인증 없음 | ✅ 수정 | X-Admin-Key 헤더 검증 추가. ADMIN_SECRET env 설정 시 적용 (B3) |
+| 메인 페이지 데이터 정체성 모호 | ✅ 해결 | Week 2 카피 수정으로 해결 |
+| Chart.js 그래프 없음 | ✅ 해결 | Week 2에 구현 완료 |
+
+---
+
+## 🔧 리팩토링 / 버그 / 개선 포인트
+
+> 코드 전체 리뷰 결과 (2026-04-29). 우선순위 순 정렬.
+
+---
+
+### 🔴 버그 — 즉시 수정 권장
+
+| # | 파일/위치 | 문제 | 상태 |
+|---|---------|------|------|
+| B1 | `app/main.py` | `item_detail` 404 시 index.html 컨텍스트 없이 렌더링 → 500 에러 | ✅ 수정완료 |
+| B2 | `app/templates/item_detail.html` | 365일 데이터에도 "30일 최고/최저" 라벨 고정 | ✅ 수정완료 |
+| B3 | `app/main.py` | `/admin/collect` 인증 없음 | ✅ 수정완료 |
+
+---
+
+### 🟠 성능 — 트래픽 증가 시 문제 될 수 있음
+
+| # | 파일/위치 | 문제 | 상태 |
+|---|---------|------|------|
+| P1 | `price_service.py` | N+1 쿼리: 품목 20개 × `_price_near` 2회 = 40개 추가 쿼리 | 🟡 잔존 (트래픽 낮아 무방) |
+| P2 | `price_stats_service.py` | `get_month_vs_annual` 내 4개 분리 쿼리 | 🟡 잔존 |
+| P3 | `weather_client.py` | 날씨 캐시 모듈 글로벌 변수 (멀티워커 비공유) | 🟡 잔존 (단일 인스턴스 무방) |
+
+---
+
+### 🟡 코드 품질
+
+| # | 파일/위치 | 문제 | 상태 |
+|---|---------|------|------|
+| Q1 | `main.py` + `weather_client.py` | `_KO_DAYS` / `WEEKDAY_KO` 중복 | ✅ 수정완료 |
+| Q2 | `price_service.py` | `rate()` 루프 내 재정의 | ✅ 수정완료 (모듈 레벨 `_change_rate`로 통합) |
+| Q3 | `main.py` | index async / item_detail sync 불일치 | ✅ 수정완료 |
+| Q4 | `price_stats_service.py` | `enrich_season_picks` in-place + return 혼재 | 🟡 잔존 (기능 정상, 저우선순위) |
+| Q5 | `price_stats_service.py` | `if not month_avg` 0.0 처리 오류 | ✅ 수정완료 |
+
+---
+
+### 🟢 소규모 UX 개선
+
+| # | 위치 | 개선 내용 | 상태 |
+|---|------|---------|------|
+| U1 | `item_detail.html` | 비시즌 품목 current_price=0 → "현재 데이터 없음" 표시 | ✅ 수정완료 |
+| U2 | `signal_service.py` | 데이터 없을 때 "보통" 오해 유발 → grey 신호등 고려 | 🟡 잔존 |
+| U3 | `item_detail.html` | 🟢 신호 시 절약 금액 표시 | 🟡 미구현 |
+| U4 | `item_detail.html` | 차트 기간 탭 (30일/90일/1년) | 🟡 미구현 |
+| U5 | 메인/상세 | 마지막 수집 시각 표시 | 🟡 미구현 |
+| U6 | 메인 | 품목 검색 | 🟡 미구현 |
+
+---
+
+### 📊 데이터 정확성 이슈
+
+| # | 위치 | 문제 | 메모 |
+|---|------|------|------|
+| D1 | `item_detail.html` | `avg_year_price`(KAMIS dpr7 = 5년 평년) vs `month_stats.annual_avg`(당사 누적 평균) 두 값이 동시 표시 — 혼란 가능 | 데이터 1년+ 누적 후 dpr7 대신 자체 통계로 대체 고려 |
+| D2 | `kamis_client.py:134–141` | dpr3/dpr5를 "today - 7일" / "today - 30일"로 고정 저장 — KAMIS 실제 기준일(주말·휴일 반영)과 정확히 불일치 가능 | `_price_near` 4일 윈도우로 실용적 커버 중. 현재 무방 |
+
+---
+
+## 🔬 Opus 심층 리뷰 추가 발견 이슈 (2026-04-29)
+
+> 위 기본 리뷰에서 발견한 이슈를 **제외**하고 Claude Opus가 별도 코드 전수 검토한 결과.
+
+---
+
+### 🔴 Critical — 현재 동작 오류
+
+| # | 파일:줄 | 문제 | 상태 |
+|---|---------|------|------|
+| O1 | `weather_client.py:83` | `[:days]` 슬라이스 — 주 후반일수록 미래 날씨 소실 | ✅ 수정완료 |
+| O2 | `index.html:139` | `category_emoji[category]` 직접 접근 → KeyError 500 | ✅ 수정완료 |
+| O3 | `signal_service.py:1–7` | 독스트링 75%/25% ≠ 실제 코드 60%/40% | ✅ 수정완료 |
+
+---
+
+### 🟠 High — 안정성·보안
+
+| # | 파일:줄 | 문제 | 상태 |
+|---|---------|------|------|
+| O4 | `database.py:6` | `pool_pre_ping=True` 미설정 → 유휴 후 DB OperationalError | ✅ 수정완료 |
+| O5 | `kamis_client.py:19–24` | `ssl.CERT_NONE` 인증서 검증 비활성화 | 🟡 잔존 (KAMIS 서버 한계) |
+| O6 | `weather_impact_service.py:22–24` | lambda에 None 가드 없음 → `None <= -5` TypeError | ✅ 수정완료 |
+
+---
+
+### 🟡 Medium — 기능 결함·UX 오류
+
+| # | 파일:줄 | 문제 | 상태 |
+|---|---------|------|------|
+| O7 | `backfill.py:98–100` | `main()` DB 세션 finally 없음 → 예외 시 연결 누수 | ✅ 수정완료 |
+| O8 | `item_detail.html:113–125` | points=0이어도 canvas 렌더링 → 빈 흰 사각형 | ✅ 수정완료 |
+| O9 | `item_detail.html:116–119` | 차트 제목 span_days > 60 분기 → 31~60일 구간 오표시 | ✅ 수정완료 |
+| O10 | `price_stats_service.py:40–51` | 운영 초기 "연평균"이 실은 수집 기간 평균 | 🟡 잔존 (데이터 누적 후 자연 해소) |
+| O11 | `main.py:99` 필터링 | 비시즌 pick `/items/None` URL 가능성 | 🟢 비이슈 (main.py 필터로 이미 방지됨) |
+
+---
+
+### 🟢 Low — 코드 품질·유지보수
+
+| # | 파일:줄 | 문제 | 상태 |
+|---|---------|------|------|
+| O12 | `price_service.py:33–43` | PostgreSQL `DISTINCT ON` 전용 주석 없음 | ✅ 수정완료 |
+| O13 | `seed_items.py:52–56` | SQLAlchemy 1.x `db.query()` 스타일 | 🟡 잔존 (동작 무방, 저우선순위) |
+| O14 | `index.html:176–186` | `{% macro %}` 정의가 block 바깥에 위치 | ✅ 수정완료 |
+| O15 | `base.html:7` | Tailwind CDN 버전 미고정 | 🟡 잔존 (Play CDN 특성상 버전 URL 없음) |
+| O16 | `price_collector.py:115–116` | 앱 시작 시 즉시 수집 없음 | 🟡 잔존 (`/admin/collect`로 수동 커버) |
+| O17 | `weather_impact_service.py:99–100` | 주간 요약 최대 2개 하드코딩 | ✅ 수정완료 (상수 `_MAX_WEEK_SUMMARIES=3`으로 추출·조정) |
 
 ---
 
@@ -377,6 +504,19 @@ PROJECT.md, PROGRESS.md 읽고 컨텍스트 잡아줘.
 ---
 
 ## 📝 변경 로그
+
+### 2026-04-29 — Week 3 완성 + 코드 안정화
+
+**Week 3 핵심 기능 구현 완료**
+- Phase 12: Open-Meteo API 날씨 연동 (`weather_client.py`, past_days 지원, 1시간 캐시)
+- Phase 13: 날씨→가격 영향 룰 엔진 (`weather_impact_service.py`, 5종 룰)
+- Phase 14: 주간 날씨 카드 (일~토 가로 스크롤, 기온·날씨·영향 이모지)
+- Phase 16: 구매 행동 추천 (`get_action()`, buy_now/buy_soon/neutral/wait)
+- 추가: 시즌 캘린더 실제 월별 통계 연동, 신호등 정확도 수정, 30일 변동률 데이터 확보
+
+**코드 전수 리뷰 + 버그 수정 (17개)**
+- 기본 리뷰: B1(404 처리), B2(라벨 고정), B3(인증 없음), Q1~Q3·Q5(품질)
+- Opus 심층 리뷰: O1(날씨 슬라이스), O2(KeyError), O3(독스트링), O4(pool_pre_ping), O6(None 가드), O7(finally), O8·O9(차트), O12(주석), O14(매크로), O17(상수)
 
 ### 2026-04-28 (오후) — 정체성 확장 v1.2
 - **친구 피드백 반영**: 정체성을 "가격 표시"에서 "**구매 타이밍 가이드**"로 확장

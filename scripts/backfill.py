@@ -96,8 +96,10 @@ async def backfill_date(target_date: date, items: list[Item]) -> int:
 async def main(days: int) -> None:
     today = date.today()
     db = SessionLocal()
-    items: list[Item] = db.query(Item).all()
-    db.close()
+    try:
+        items: list[Item] = db.query(Item).all()
+    finally:
+        db.close()
 
     logger.info(f"백필 시작 — 과거 {days}일, 품목 {len(items)}종")
 

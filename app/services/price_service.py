@@ -25,6 +25,12 @@ def _price_near(db: Session, item_id: int, target: date, window: int = 4) -> flo
     return float(row) if row else None
 
 
+def _change_rate(current: float, past: float | None) -> float | None:
+    if past is None or past == 0 or current == 0:
+        return None
+    return round((current - past) / past * 100, 2)
+
+
 def get_today_prices(db: Session) -> PricesTodayResponse:
     """
     품목별 가장 최근 가격을 반환한다.
@@ -36,7 +42,7 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             PriceHistory.price,
             PriceHistory.recorded_date,
         )
-        .distinct(PriceHistory.item_id)
+        .distinct(PriceHistory.item_id)  # PostgreSQL DISTINCT ON 전용
         .where(PriceHistory.source == "kamis")
         .order_by(PriceHistory.item_id, PriceHistory.recorded_date.desc())
         .subquery()
@@ -53,14 +59,8 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
 
     for item, price, recorded_date in rows:
         price_float = float(price)
-
         past_7d  = _price_near(db, item.id, recorded_date - timedelta(days=7))
         past_30d = _price_near(db, item.id, recorded_date - timedelta(days=30))
-
-        def rate(past) -> float | None:
-            if past is None or past == 0:
-                return None
-            return round((price_float - past) / past * 100, 2)
 
         items.append(PriceItem(
             item_id=item.id,
@@ -70,9 +70,9 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             unit=item.unit,
             price=price_float,
             recorded_date=recorded_date,
-            change_7d=rate(past_7d),
-            change_30d=rate(past_30d),
-            change_avg=rate(float(item.avg_year_price)) if item.avg_year_price else None,
+            change_7d=_change_rate(price_float, past_7d),
+            change_30d=_change_rate(price_float, past_30d),
+            change_avg=_change_rate(price_float, float(item.avg_year_price)) if item.avg_year_price else None,
         ))
 
     display_date = max((i.recorded_date for i in items), default=today)
@@ -112,14 +112,9 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
     current_price = float(latest_row.price) if latest_row else 0.0
     current_date = latest_row.recorded_date if latest_row else date.today()
 
-    def _rate(past: float | None) -> float | None:
-        if past is None or past == 0 or current_price == 0:
-            return None
-        return round((current_price - past) / past * 100, 2)
-
-    change_7d  = _rate(_price_near(db, item.id, current_date - timedelta(days=7)))
-    change_30d = _rate(_price_near(db, item.id, current_date - timedelta(days=30)))
-    change_avg = _rate(float(item.avg_year_price)) if item.avg_year_price else None
+    change_7d  = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=7)))
+    change_30d = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=30)))
+    change_avg = _change_rate(current_price, float(item.avg_year_price)) if item.avg_year_price else None
 
     return PriceHistoryResponse(
         item_code=item.code,
