@@ -9,6 +9,23 @@
   ← 전체 품목
 </a>
 
+<!-- 같은 그룹의 변형 탭 (부위·품종·용량 전환) -->
+{% if siblings %}
+<div class="mb-4">
+  <p class="text-xs text-gray-400 mb-2">{{ group_display_name }} 비교</p>
+  <div class="flex flex-wrap gap-2">
+    {% for sib in siblings %}
+    <a href="/items/{{ sib.code }}"
+       class="text-sm px-3 py-1.5 rounded-xl border font-medium transition-colors
+         {% if sib.code == current_item_code %}bg-gray-800 text-white border-gray-800
+         {% else %}bg-white text-gray-600 border-gray-200 hover:border-gray-400{% endif %}">
+      {{ sib.variant_label }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 <!-- 품목 헤더 -->
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
   <div class="flex items-start justify-between">

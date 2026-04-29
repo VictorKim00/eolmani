@@ -14,6 +14,9 @@ class PriceItem(BaseModel):
     change_7d: float | None    # 7일 변동률 (%)
     change_30d: float | None   # 30일 변동률 (%)
     change_avg: float | None   # 평년 대비 변동률 (%)
+    group_code: str | None = None
+    variant_label: str | None = None
+    sort_order: int = 0
 
     model_config = {"from_attributes": True}
 

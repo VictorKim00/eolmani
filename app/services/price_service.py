@@ -73,6 +73,9 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             change_7d=_change_rate(price_float, past_7d),
             change_30d=_change_rate(price_float, past_30d),
             change_avg=_change_rate(price_float, float(item.avg_year_price)) if item.avg_year_price else None,
+            group_code=item.group_code,
+            variant_label=item.variant_label,
+            sort_order=item.sort_order,
         ))
 
     display_date = max((i.recorded_date for i in items), default=today)

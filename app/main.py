@@ -5,12 +5,13 @@ from datetime import date, timedelta
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.api.prices import router as prices_router
 from app.config import settings
 from app.database import get_db
+from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
@@ -35,6 +36,51 @@ UNIT_DIVISOR: dict[str, tuple[int, str]] = {
     "500g": (5, "100g당"),
 }
 
+# 그룹 카드에서 보여줄 표시 이름
+GROUP_DISPLAY_NAMES: dict[str, str] = {
+    "beef_korean": "소고기(한우)",
+    "pork": "돼지고기",
+    "rice": "쌀",
+}
+
+
+def _build_category_cards(items_in_cat: list) -> list:
+    """
+    카테고리 내 품목을 group_code 기준으로 묶어 카드 목록을 반환.
+    그룹 품목은 첫 등장 위치에 ONE 그룹 카드로 삽입.
+    반환 요소 형태:
+      {"is_group": False, "item": PriceItem}
+      {"is_group": True, "group_code": str, "group_name": str,
+       "default": PriceItem, "variants": [PriceItem, ...]}
+    """
+    group_map: dict[str, list] = {}
+    for item in items_in_cat:
+        if item.group_code:
+            group_map.setdefault(item.group_code, []).append(item)
+
+    for code in group_map:
+        group_map[code].sort(key=lambda x: x.sort_order)
+
+    cards: list = []
+    seen_groups: set = set()
+
+    for item in items_in_cat:
+        if item.group_code:
+            if item.group_code not in seen_groups:
+                variants = group_map[item.group_code]
+                cards.append({
+                    "is_group": True,
+                    "group_code": item.group_code,
+                    "group_name": GROUP_DISPLAY_NAMES.get(item.group_code, item.name),
+                    "default": variants[0],
+                    "variants": variants,
+                })
+                seen_groups.add(item.group_code)
+        else:
+            cards.append({"is_group": False, "item": item})
+
+    return cards
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,18 +100,28 @@ templates = Jinja2Templates(directory="app/templates")
 async def index(request: Request, db: Session = Depends(get_db)):
     data = get_today_prices(db)
 
-    # 카테고리별 그룹핑
-    categories: dict[str, list] = defaultdict(list)
+    # 카테고리별 그룹핑 → 그룹 카드 목록으로 변환
+    raw_categories: dict[str, list] = defaultdict(list)
     for item in data.items:
-        categories[item.category].append(item)
+        raw_categories[item.category].append(item)
 
-    # TOP 5 오늘의 특가: 7일 대비 하락폭이 큰 순
+    category_cards: dict[str, list] = {
+        cat: _build_category_cards(items)
+        for cat, items in raw_categories.items()
+    }
+
+    # TOP 5 오늘의 특가: 7일 대비 하락폭이 큰 순 (그룹 default 포함)
+    all_for_deals = [
+        (c["default"] if c["is_group"] else c["item"])
+        for cards in category_cards.values()
+        for c in cards
+    ]
     deals = sorted(
-        [i for i in data.items if i.change_7d is not None and i.change_7d < 0],
+        [i for i in all_for_deals if i.change_7d is not None and i.change_7d < 0],
         key=lambda i: i.change_7d,
     )[:5]
 
-    # 신호등 계산
+    # 신호등 계산 (전체 개별 품목 기준)
     signals = {
         i.code: compute_signal(i.change_avg, i.change_30d, i.change_7d)
         for i in data.items
@@ -82,7 +138,6 @@ async def index(request: Request, db: Session = Depends(get_db)):
     days_since_sunday = (today_date.weekday() + 1) % 7  # 일=0, 월=1, ..., 토=6
     week_start = today_date - timedelta(days=days_since_sunday)
 
-    # past_days 포함해 전체 반환 → forecast_future는 오늘 이후 7일까지 포함
     forecast_full = await fetch_forecast(days=7, past_days=days_since_sunday)
     forecast_future = [d for d in forecast_full if d["date"] >= today_date.strftime("%Y-%m-%d")]
     impacts = get_impacts(forecast_future)
@@ -128,7 +183,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         "index.html",
         {
             "today": today_date.strftime("%Y년 %m월 %d일"),
-            "categories": dict(categories),
+            "category_cards": category_cards,
             "category_emoji": CATEGORY_EMOJI,
             "unit_divisor": UNIT_DIVISOR,
             "total_count": data.count,
@@ -162,6 +217,18 @@ async def item_detail(item_code: str, request: Request, db: Session = Depends(ge
     month_stats = get_month_vs_annual(db, item_code, today_date.month)
     action = get_action(signal, history.change_7d, history.change_30d, month_stats)
 
+    # 같은 그룹의 형제 품목 조회 (탭 전환용)
+    current_item = db.execute(
+        select(ItemModel).where(ItemModel.code == item_code)
+    ).scalar_one_or_none()
+    siblings: list[ItemModel] = []
+    if current_item and current_item.group_code:
+        siblings = db.execute(
+            select(ItemModel)
+            .where(ItemModel.group_code == current_item.group_code)
+            .order_by(ItemModel.sort_order)
+        ).scalars().all()
+
     return templates.TemplateResponse(
         request,
         "item_detail.html",
@@ -177,6 +244,11 @@ async def item_detail(item_code: str, request: Request, db: Session = Depends(ge
             "month_stats": month_stats,
             "current_month": today_date.month,
             "action": action,
+            "siblings": siblings,
+            "current_item_code": item_code,
+            "group_display_name": GROUP_DISPLAY_NAMES.get(
+                current_item.group_code if current_item else "", ""
+            ),
         },
     )
 

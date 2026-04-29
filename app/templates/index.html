@@ -12,9 +12,18 @@
 {% endif %}
 {% endmacro %}
 
+{% macro signal_pill(sig) %}
+<span class="shrink-0 text-xs px-1.5 py-0.5 rounded-full font-medium
+  {% if sig == 'green' %}bg-emerald-50 text-emerald-600
+  {% elif sig == 'red' %}bg-red-50 text-red-500
+  {% else %}bg-gray-100 text-gray-500{% endif %}">
+  {{ signal_label[sig] }}
+</span>
+{% endmacro %}
+
 {% block content %}
 
-{% if not categories %}
+{% if not category_cards %}
 <div class="flex flex-col items-center justify-center py-20 text-center">
   <div class="text-5xl mb-4">🥬</div>
   <h2 class="text-lg font-semibold text-gray-600 mb-2">데이터 수집 준비 중</h2>
@@ -112,14 +121,7 @@
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 min-w-0">
             <p class="font-semibold text-gray-800 text-sm truncate">{{ s.name }}</p>
-            {% if s.signal %}
-            <span class="shrink-0 text-xs px-1.5 py-0.5 rounded-full font-medium
-              {% if s.signal == 'green' %}bg-emerald-50 text-emerald-600
-              {% elif s.signal == 'red' %}bg-red-50 text-red-500
-              {% else %}bg-yellow-50 text-yellow-600{% endif %}">
-              {{ signal_label[s.signal] }}
-            </span>
-            {% endif %}
+            {% if s.signal %}{{ signal_pill(s.signal) }}{% endif %}
           </div>
           {% if s.price %}
           <span class="shrink-0 text-sm font-bold text-gray-700">{{ "{:,.0f}".format(s.price) }}원</span>
@@ -150,9 +152,7 @@
     {% set div_info = unit_divisor.get(item.unit) %}
     <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-blue-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-blue-200 transition-all">
       <div class="min-w-0">
-        <div class="flex items-center gap-1.5">
-          <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
-        </div>
+        <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
         <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }}</p>
       </div>
       <div class="text-right shrink-0 ml-3">
@@ -160,9 +160,7 @@
         {% if div_info %}
         <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
         {% endif %}
-        <p class="text-xs font-semibold text-blue-500 mt-0.5">
-          ▼{{ "%.1f"|format(item.change_7d|abs) }}% 일주일 전 대비
-        </p>
+        <p class="text-xs font-semibold text-blue-500 mt-0.5">▼{{ "%.1f"|format(item.change_7d|abs) }}% 7일 전 대비</p>
       </div>
     </a>
     {% endfor %}
@@ -171,34 +169,70 @@
 {% endif %}
 
 <!-- 카테고리별 섹션 -->
-{% for category, items in categories.items() %}
+{% for category, cards in category_cards.items() %}
 <section class="mb-8">
   <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
     {{ category_emoji.get(category, "🏷️") }} {{ category }}
   </h2>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-    {% for item in items %}
+    {% for card in cards %}
+
+    {# ── 그룹 카드 (부위·품종 여러 개 묶음) ── #}
+    {% if card.is_group %}
+    {% set def = card.default %}
+    {% set def_sig = signals[def.code] %}
+    {% set div_info = unit_divisor.get(def.unit) %}
+    <a href="/items/{{ def.code }}" class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md hover:border-gray-200 transition-all block">
+      <div class="flex justify-between items-start mb-2">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-base">{{ signal_emoji[def_sig] }}</span>
+            <p class="font-semibold text-gray-800 truncate">{{ card.group_name }}</p>
+            {{ signal_pill(def_sig) }}
+          </div>
+          <p class="text-xs text-gray-400 mt-1">{{ def.unit }} · 전국 평균</p>
+        </div>
+        <div class="text-right shrink-0 ml-3">
+          <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(def.price) }}원</p>
+          {% if div_info %}
+          <p class="text-xs text-gray-400">{{ "{:,.0f}".format((def.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
+          {% endif %}
+          <div class="flex gap-2 justify-end mt-1">
+            {{ change_badge(def.change_7d, "7일") }}
+          </div>
+        </div>
+      </div>
+      <!-- 변형 탭 목록 -->
+      <div class="flex flex-wrap gap-1.5 pt-2 border-t border-gray-50">
+        {% for v in card.variants %}
+        {% set v_sig = signals[v.code] %}
+        <span class="text-xs px-2 py-1 rounded-lg border font-medium
+          {% if v.code == def.code %}bg-gray-800 text-white border-gray-800
+          {% elif v_sig == 'green' %}bg-emerald-50 text-emerald-700 border-emerald-100
+          {% elif v_sig == 'red' %}bg-red-50 text-red-600 border-red-100
+          {% else %}bg-gray-50 text-gray-500 border-gray-100{% endif %}">
+          {{ v.variant_label }}
+          {% if v.price %}· {{ "{:,.0f}".format(v.price) }}원{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </a>
+
+    {# ── 단일 품목 카드 ── #}
+    {% else %}
+    {% set item = card.item %}
     {% set sig = signals[item.code] %}
     {% set div_info = unit_divisor.get(item.unit) %}
     <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-gray-200 transition-all">
-
-      <!-- 품목 정보 -->
       <div class="min-w-0">
         <div class="flex items-center gap-2">
           <span class="text-base">{{ signal_emoji[sig] }}</span>
           <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
-          <span class="shrink-0 text-xs px-1.5 py-0.5 rounded-full font-medium
-            {% if sig == 'green' %}bg-emerald-50 text-emerald-600
-            {% elif sig == 'red' %}bg-red-50 text-red-500
-            {% else %}bg-gray-100 text-gray-500{% endif %}">
-            {{ signal_label[sig] }}
-          </span>
+          {{ signal_pill(sig) }}
         </div>
         <p class="text-xs text-gray-400 mt-1">{{ item.unit }} · 전국 평균</p>
       </div>
-
-      <!-- 가격 + 변동률 -->
       <div class="text-right shrink-0 ml-3">
         <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원</p>
         {% if div_info %}
@@ -209,8 +243,9 @@
           {{ change_badge(item.change_30d, "30일") }}
         </div>
       </div>
-
     </a>
+    {% endif %}
+
     {% endfor %}
   </div>
 </section>
