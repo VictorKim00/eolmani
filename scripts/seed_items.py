@@ -35,9 +35,16 @@ ITEMS = [
     {"code": "green_onion", "name": "대파",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "246",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "garlic",      "name": "마늘",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "258",  "kamis_kind_code": "01", "kamis_rank": "상품"},
     {"code": "spinach",     "name": "시금치",          "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "213",  "kamis_kind_code": "00", "kamis_rank": "상품"},
-    {"code": "cucumber",    "name": "오이",            "category": "채소", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "223",  "kamis_kind_code": "02", "kamis_rank": "상품"},
-    {"code": "zucchini",    "name": "애호박",          "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "224",  "kamis_kind_code": "01", "kamis_rank": "상품"},
-    {"code": "lettuce",     "name": "상추",            "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "214",  "kamis_kind_code": "02", "kamis_rank": "상품"},
+    # 오이 그룹: 다다기(가장 흔함) / 가시계통 / 취청 — 셋 다 오늘 데이터 확인
+    {"code": "cucumber",         "name": "오이(다다기)",  "category": "채소", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "223",  "kamis_kind_code": "02", "kamis_rank": "상품", "group_code": "cucumber", "variant_label": "다다기",   "sort_order": 1},
+    {"code": "cucumber_spiny",   "name": "오이(가시)",   "category": "채소", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "223",  "kamis_kind_code": "01", "kamis_rank": "상품", "group_code": "cucumber", "variant_label": "가시계통", "sort_order": 2},
+    {"code": "cucumber_green",   "name": "오이(취청)",   "category": "채소", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "223",  "kamis_kind_code": "03", "kamis_rank": "상품", "group_code": "cucumber", "variant_label": "취청",    "sort_order": 3},
+    # 호박 그룹: 애호박 / 쥬키니 — 둘 다 오늘 데이터 확인
+    {"code": "zucchini",         "name": "호박(애호박)", "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "224",  "kamis_kind_code": "01", "kamis_rank": "상품", "group_code": "pumpkin",  "variant_label": "애호박",  "sort_order": 1},
+    {"code": "zucchini_green",   "name": "호박(쥬키니)", "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "224",  "kamis_kind_code": "02", "kamis_rank": "상품", "group_code": "pumpkin",  "variant_label": "쥬키니",  "sort_order": 2},
+    # 상추 그룹: 청상추 / 적상추 — 둘 다 오늘 데이터 확인
+    {"code": "lettuce",          "name": "상추(청)",     "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "214",  "kamis_kind_code": "02", "kamis_rank": "상품", "group_code": "lettuce",  "variant_label": "청상추",  "sort_order": 1},
+    {"code": "lettuce_red",      "name": "상추(적)",     "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "214",  "kamis_kind_code": "01", "kamis_rank": "상품", "group_code": "lettuce",  "variant_label": "적상추",  "sort_order": 2},
     {"code": "chili",       "name": "청양고추",        "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "242",  "kamis_kind_code": "03", "kamis_rank": "상품"},
     {"code": "carrot",      "name": "당근",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "232",  "kamis_kind_code": "01", "kamis_rank": "상품"},
     {"code": "perilla",     "name": "깻잎",            "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "253",  "kamis_kind_code": "00", "kamis_rank": "상품"},

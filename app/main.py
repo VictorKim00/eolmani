@@ -41,6 +41,9 @@ GROUP_DISPLAY_NAMES: dict[str, str] = {
     "beef_korean": "소고기(한우)",
     "pork": "돼지고기",
     "rice": "쌀",
+    "cucumber": "오이",
+    "pumpkin": "호박",
+    "lettuce": "상추",
 }
 
 
