@@ -14,7 +14,7 @@ from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.season_service import get_this_month_season
-from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal
+from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal, get_action
 from app.services.weather_client import fetch_forecast
 from app.services.weather_impact_service import get_impacts, get_week_summary
 
@@ -141,6 +141,7 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
     chart_labels = [str(p.date) for p in history.points]
     chart_prices = [p.price for p in history.points]
     month_stats = get_month_vs_annual(db, item_code, today_date.month)
+    action = get_action(signal, history.change_7d, history.change_30d, month_stats)
 
     return templates.TemplateResponse(
         request,
@@ -155,6 +156,7 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
             "chart_prices": chart_prices,
             "month_stats": month_stats,
             "current_month": today_date.month,
+            "action": action,
         },
     )
 
