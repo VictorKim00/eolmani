@@ -1,6 +1,6 @@
 from collections import defaultdict
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +12,7 @@ from app.api.prices import router as prices_router
 from app.database import get_db
 from app.scheduler.price_collector import start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
-from app.services.price_stats_service import enrich_season_picks
+from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal
 from app.services.weather_client import fetch_forecast
@@ -25,6 +25,8 @@ CATEGORY_EMOJI: dict[str, str] = {
     "축산": "🥩",
     "수산": "🐟",
 }
+
+_KO_DAYS = ["월", "화", "수", "목", "금", "토", "일"]  # Python weekday() 0=Mon → index
 
 
 @asynccontextmanager
@@ -67,9 +69,34 @@ async def index(request: Request, db: Session = Depends(get_db)):
     impacts = get_impacts(forecast)
     week_summary = get_week_summary(forecast)
 
-    # 시즌 캘린더 — item_code 있는 picks에 실제 신호등 + 가격 + 월별 통계 주입
+    # 이번 주 일~토 구조 (과거 날은 빈 칸, 오늘 이후는 예보 데이터)
+    today_date = date.today()
+    days_since_sunday = (today_date.weekday() + 1) % 7  # 일=0, 월=1, ..., 토=6
+    week_start = today_date - timedelta(days=days_since_sunday)
+    forecast_lookup = {d["date"]: d for d in forecast}
+    week_days = []
+    for i in range(7):
+        d = week_start + timedelta(days=i)
+        d_str = d.strftime("%Y-%m-%d")
+        if d_str in forecast_lookup:
+            entry = {**forecast_lookup[d_str], "is_today": d == today_date, "is_past": False}
+        else:
+            entry = {
+                "date": d_str,
+                "weekday": _KO_DAYS[d.weekday()],
+                "is_past": d < today_date,
+                "is_today": False,
+                "temp_max": None,
+                "temp_min": None,
+                "precip_prob": 0,
+                "emoji": None,
+            }
+        week_days.append(entry)
+
+    # 시즌 캘린더 — item_code 없는 미추적 품목 제외, 나머지에 신호등·가격·월별 통계 주입
     season = get_this_month_season()
-    season["picks"] = enrich_season_picks(db, season["picks"], date.today().month)
+    season["picks"] = [p for p in season["picks"] if p.get("item_code")]
+    season["picks"] = enrich_season_picks(db, season["picks"], today_date.month)
     item_map = {i.code: i for i in data.items}
     for pick in season["picks"]:
         code = pick.get("item_code")
@@ -85,7 +112,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         request,
         "index.html",
         {
-            "today": date.today().strftime("%Y년 %m월 %d일"),
+            "today": today_date.strftime("%Y년 %m월 %d일"),
             "categories": dict(categories),
             "category_emoji": CATEGORY_EMOJI,
             "total_count": data.count,
@@ -94,7 +121,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
             "season": season,
-            "forecast": forecast,
+            "week_days": week_days,
             "impacts": impacts,
             "week_summary": week_summary,
         },
@@ -107,11 +134,7 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
     if history is None:
         return templates.TemplateResponse(request, "index.html", {"error": "품목 없음"}, status_code=404)
 
-    signal = compute_signal(
-        None,  # avg_year_price는 history.avg_year_price로 계산
-        None,
-        None,
-    )
+    signal = compute_signal(None, None, None)
     if history.points:
         latest = history.points[-1].price
         p30 = history.points[0].price if len(history.points) >= 30 else None
@@ -120,27 +143,26 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
             if past is None or past == 0:
                 return None
             return round((latest - past) / past * 100, 2)
-        signal = compute_signal(
-            _rate(history.avg_year_price),
-            _rate(p30),
-            _rate(p7),
-        )
+        signal = compute_signal(_rate(history.avg_year_price), _rate(p30), _rate(p7))
 
-    # date 객체는 tojson 직렬화 불가 → 문자열로 변환해서 넘김
+    today_date = date.today()
     chart_labels = [str(p.date) for p in history.points]
     chart_prices = [p.price for p in history.points]
+    month_stats = get_month_vs_annual(db, item_code, today_date.month)
 
     return templates.TemplateResponse(
         request,
         "item_detail.html",
         {
-            "today": date.today().strftime("%Y년 %m월 %d일"),
+            "today": today_date.strftime("%Y년 %m월 %d일"),
             "history": history,
             "signal": signal,
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
             "chart_labels": chart_labels,
             "chart_prices": chart_prices,
+            "month_stats": month_stats,
+            "current_month": today_date.month,
         },
     )
 

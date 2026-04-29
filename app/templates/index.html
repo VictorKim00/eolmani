@@ -24,7 +24,7 @@
 </div>
 
 <!-- 주간 날씨 + 가격 영향 -->
-{% if forecast %}
+{% if week_days %}
 <section class="mb-8">
   <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
     🌤️ 이번 주 날씨 · 가격 영향
@@ -38,13 +38,20 @@
   </div>
   {% endif %}
 
-  <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-    {% for day in forecast %}
+  <div class="flex gap-2 pb-1">
+    {% for day in week_days %}
     {% set day_impacts = impacts.get(day.date, []) %}
-    <div class="flex-shrink-0 w-[72px] bg-white rounded-xl border shadow-sm px-2 py-3 text-center
-      {{ 'border-orange-200' if day_impacts else 'border-gray-100' }}">
-      <p class="text-xs text-gray-400 mb-1">{{ day.weekday }}</p>
-      <p class="text-lg leading-none mb-1">{{ day.emoji }}</p>
+    <div class="flex-1 min-w-0 bg-white rounded-xl border shadow-sm px-1 py-3 text-center
+      {% if day.is_today %}border-emerald-300 ring-1 ring-emerald-100
+      {% elif day.is_past %}border-gray-100 opacity-40
+      {% elif day_impacts %}border-orange-200
+      {% else %}border-gray-100{% endif %}">
+      <p class="text-xs mb-1 truncate
+        {% if day.is_today %}text-emerald-600 font-bold{% else %}text-gray-400{% endif %}">
+        {% if day.is_today %}오늘{% else %}{{ day.weekday }}{% endif %}
+      </p>
+      {% if not day.is_past %}
+      <p class="text-base leading-none mb-1">{{ day.emoji }}</p>
       <p class="text-xs font-bold text-red-400">{{ day.temp_max | int }}°</p>
       <p class="text-xs text-blue-400">{{ day.temp_min | int }}°</p>
       {% if day.precip_prob > 0 %}
@@ -52,6 +59,9 @@
       {% endif %}
       {% if day_impacts %}
       <p class="text-xs mt-1">{% for impact in day_impacts %}{{ impact.emoji }}{% endfor %}</p>
+      {% endif %}
+      {% else %}
+      <p class="text-lg leading-none text-gray-200 mt-1">—</p>
       {% endif %}
     </div>
     {% endfor %}
@@ -68,7 +78,7 @@
   </h2>
   <div class="bg-white rounded-xl border border-emerald-100 shadow-sm divide-y divide-gray-50">
     {% for s in season.picks %}
-    <div class="px-4 py-3 flex items-start gap-3">
+    <a href="/items/{{ s.item_code }}" class="px-4 py-3 flex items-start gap-3 hover:bg-emerald-50 transition-colors block">
       <span class="text-xl mt-0.5">{{ s.emoji }}</span>
       <div class="flex-1">
         <div class="flex items-center justify-between">
@@ -83,17 +93,15 @@
         </div>
         <p class="text-xs text-gray-400 mt-0.5">{{ s.reason }}</p>
         {% if s.stats %}
-        <p class="text-xs mt-1
-          {% if s.stats.pct_diff <= -3 %}text-blue-500 font-medium
-          {% elif s.stats.pct_diff >= 3 %}text-red-500 font-medium
+        <p class="text-xs mt-1 font-medium
+          {% if s.stats.pct_diff <= -3 %}text-blue-500
+          {% elif s.stats.pct_diff >= 3 %}text-red-500
           {% else %}text-gray-400{% endif %}">
           {{ s.stats.label }}
         </p>
-        {% elif not s.signal %}
-        <p class="text-xs text-gray-300 mt-0.5">가격 미추적 품목</p>
         {% endif %}
       </div>
-    </div>
+    </a>
     {% endfor %}
   </div>
 </section>

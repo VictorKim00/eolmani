@@ -45,6 +45,39 @@
   {% endif %}
 </div>
 
+<!-- 이번 달 통계 -->
+{% if month_stats %}
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
+  <h2 class="text-sm font-semibold text-gray-500 mb-3">{{ current_month }}월 역사 통계</h2>
+  <div class="grid grid-cols-3 gap-3 text-center">
+    <div>
+      <p class="text-xs text-gray-400 mb-1">{{ current_month }}월 평균</p>
+      <p class="text-sm font-bold text-gray-800">{{ "{:,.0f}".format(month_stats.month_avg) }}원</p>
+    </div>
+    <div class="border-x border-gray-100">
+      <p class="text-xs text-gray-400 mb-1">연평균</p>
+      <p class="text-sm font-bold text-gray-800">{{ "{:,.0f}".format(month_stats.annual_avg) }}원</p>
+    </div>
+    <div>
+      <p class="text-xs text-gray-400 mb-1">차이</p>
+      <p class="text-sm font-bold
+        {% if month_stats.pct_diff <= -3 %}text-blue-500
+        {% elif month_stats.pct_diff >= 3 %}text-red-500
+        {% else %}text-gray-500{% endif %}">
+        {{ "%+.1f"|format(month_stats.pct_diff) }}%
+      </p>
+    </div>
+  </div>
+  <p class="text-xs text-center mt-3 font-medium
+    {% if month_stats.pct_diff <= -3 %}text-blue-500
+    {% elif month_stats.pct_diff >= 3 %}text-red-500
+    {% else %}text-gray-400{% endif %}">
+    {{ month_stats.label }}
+  </p>
+  <p class="text-xs text-gray-300 text-center mt-1">{{ month_stats.data_days }}일치 누적 데이터 기준</p>
+</div>
+{% endif %}
+
 <!-- 30일 차트 -->
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
   <h2 class="text-sm font-semibold text-gray-500 mb-3">최근 30일 가격 추이</h2>
