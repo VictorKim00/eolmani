@@ -28,6 +28,11 @@ ITEMS = [
     {"code": "spinach", "name": "시금치",          "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "213",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "cucumber","name": "오이",            "category": "채소", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "223",  "kamis_kind_code": "02", "kamis_rank": "상품"},
     {"code": "zucchini","name": "애호박",          "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "224",  "kamis_kind_code": "01", "kamis_rank": "상품"},
+    {"code": "lettuce",  "name": "상추",           "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "214",  "kamis_kind_code": "02", "kamis_rank": "상품"},  # 청상추 100g
+    {"code": "chili",   "name": "청양고추",        "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "242",  "kamis_kind_code": "03", "kamis_rank": "상품"},
+    {"code": "carrot",  "name": "당근",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "232",  "kamis_kind_code": "01", "kamis_rank": "상품"},
+    {"code": "perilla", "name": "깻잎",            "category": "채소", "unit": "100g",  "kamis_category_code": "200", "kamis_item_code": "253",  "kamis_kind_code": "00", "kamis_rank": "상품"},
+    {"code": "tomato",  "name": "토마토",          "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "225",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     # ── 과일 (category 400) ─────────────────────────────────────────
     {"code": "apple",   "name": "사과",            "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "411",  "kamis_kind_code": "05", "kamis_rank": "상품"},
     {"code": "pear",    "name": "배",              "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "412",  "kamis_kind_code": "01", "kamis_rank": "상품"},

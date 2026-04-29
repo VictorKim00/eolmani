@@ -27,6 +27,14 @@ CATEGORY_EMOJI: dict[str, str] = {
     "수산": "🐟",
 }
 
+# 묶음 단위 → (나누는 수, 표시 단위) — 1개·1구·1kg당 환산
+UNIT_DIVISOR: dict[str, tuple[int, str]] = {
+    "10개": (10, "1개당"),
+    "30구": (30, "1구당"),
+    "20kg": (20, "1kg당"),
+    "500g": (5, "100g당"),
+}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -62,6 +70,12 @@ async def index(request: Request, db: Session = Depends(get_db)):
         i.code: compute_signal(i.change_avg, i.change_30d, i.change_7d)
         for i in data.items
     }
+
+    # 신호등 분포 (요약 배너용)
+    green_count = sum(1 for s in signals.values() if s == "green")
+    red_count = sum(1 for s in signals.values() if s == "red")
+    yellow_count = len(signals) - green_count - red_count
+    top_deal = deals[0] if deals else None
 
     # 이번 주 일~토 구조 — 과거 날짜도 실제 날씨 데이터 포함
     today_date = date.today()
@@ -116,11 +130,16 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "today": today_date.strftime("%Y년 %m월 %d일"),
             "categories": dict(categories),
             "category_emoji": CATEGORY_EMOJI,
+            "unit_divisor": UNIT_DIVISOR,
             "total_count": data.count,
             "deals": deals,
             "signals": signals,
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
+            "green_count": green_count,
+            "yellow_count": yellow_count,
+            "red_count": red_count,
+            "top_deal": top_deal,
             "season": season,
             "week_days": week_days,
             "impacts": impacts,
@@ -152,6 +171,7 @@ async def item_detail(item_code: str, request: Request, db: Session = Depends(ge
             "signal": signal,
             "signal_emoji": SIGNAL_EMOJI,
             "signal_label": SIGNAL_LABEL,
+            "unit_divisor": UNIT_DIVISOR,
             "chart_labels": chart_labels,
             "chart_prices": chart_prices,
             "month_stats": month_stats,
