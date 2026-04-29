@@ -94,6 +94,25 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
 
     points = [PriceHistoryPoint(date=r.recorded_date, price=float(r.price)) for r in rows]
     current_price = points[-1].price if points else 0.0
+    current_date = points[-1].date if points else date.today()
+
+    def _price_at(d: date) -> float | None:
+        row = db.execute(
+            select(PriceHistory.price)
+            .where(PriceHistory.item_id == item.id)
+            .where(PriceHistory.source == "kamis")
+            .where(PriceHistory.recorded_date == d)
+        ).scalar_one_or_none()
+        return float(row) if row else None
+
+    def _rate(past: float | None) -> float | None:
+        if past is None or past == 0 or current_price == 0:
+            return None
+        return round((current_price - past) / past * 100, 2)
+
+    change_7d = _rate(_price_at(current_date - timedelta(days=7)))
+    change_30d = _rate(_price_at(current_date - timedelta(days=30)))
+    change_avg = _rate(float(item.avg_year_price)) if item.avg_year_price else None
 
     return PriceHistoryResponse(
         item_code=item.code,
@@ -102,5 +121,8 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
         category=item.category,
         current_price=current_price,
         avg_year_price=float(item.avg_year_price) if item.avg_year_price else None,
+        change_7d=change_7d,
+        change_30d=change_30d,
+        change_avg=change_avg,
         points=points,
     )

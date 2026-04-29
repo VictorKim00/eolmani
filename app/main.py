@@ -64,27 +64,28 @@ async def index(request: Request, db: Session = Depends(get_db)):
         for i in data.items
     }
 
-    # 날씨 예보 + 영향 룰
-    forecast = await fetch_forecast(days=7)
-    impacts = get_impacts(forecast)
-    week_summary = get_week_summary(forecast)
-
-    # 이번 주 일~토 구조 (과거 날은 빈 칸, 오늘 이후는 예보 데이터)
+    # 이번 주 일~토 구조 — 과거 날짜도 실제 날씨 데이터 포함
     today_date = date.today()
     days_since_sunday = (today_date.weekday() + 1) % 7  # 일=0, 월=1, ..., 토=6
     week_start = today_date - timedelta(days=days_since_sunday)
-    forecast_lookup = {d["date"]: d for d in forecast}
+
+    forecast_full = await fetch_forecast(days=7, past_days=days_since_sunday)
+    forecast_future = [d for d in forecast_full if d["date"] >= today_date.strftime("%Y-%m-%d")]
+    impacts = get_impacts(forecast_future)
+    week_summary = get_week_summary(forecast_future)
+
+    forecast_lookup = {d["date"]: d for d in forecast_full}
     week_days = []
     for i in range(7):
         d = week_start + timedelta(days=i)
         d_str = d.strftime("%Y-%m-%d")
         if d_str in forecast_lookup:
-            entry = {**forecast_lookup[d_str], "is_today": d == today_date, "is_past": False}
+            entry = {**forecast_lookup[d_str], "is_today": d == today_date, "is_past": d < today_date}
         else:
             entry = {
                 "date": d_str,
                 "weekday": _KO_DAYS[d.weekday()],
-                "is_past": d < today_date,
+                "is_past": True,
                 "is_today": False,
                 "temp_max": None,
                 "temp_min": None,
@@ -134,16 +135,7 @@ def item_detail(item_code: str, request: Request, db: Session = Depends(get_db))
     if history is None:
         return templates.TemplateResponse(request, "index.html", {"error": "품목 없음"}, status_code=404)
 
-    signal = compute_signal(None, None, None)
-    if history.points:
-        latest = history.points[-1].price
-        p30 = history.points[0].price if len(history.points) >= 30 else None
-        p7 = history.points[-8].price if len(history.points) >= 8 else None
-        def _rate(past):
-            if past is None or past == 0:
-                return None
-            return round((latest - past) / past * 100, 2)
-        signal = compute_signal(_rate(history.avg_year_price), _rate(p30), _rate(p7))
+    signal = compute_signal(history.change_avg, history.change_30d, history.change_7d)
 
     today_date = date.today()
     chart_labels = [str(p.date) for p in history.points]

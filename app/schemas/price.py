@@ -36,4 +36,7 @@ class PriceHistoryResponse(BaseModel):
     category: str
     current_price: float
     avg_year_price: float | None
+    change_7d: float | None
+    change_30d: float | None
+    change_avg: float | None
     points: list[PriceHistoryPoint]

@@ -43,18 +43,19 @@ WEEKDAY_KO = ["월", "화", "수", "목", "금", "토", "일"]
 
 _cache: list[dict] = []
 _cache_until: datetime = datetime.min
+_cache_past_days: int = -1
 
 
-async def fetch_forecast(days: int = 7) -> list[dict]:
+async def fetch_forecast(days: int = 7, past_days: int = 0) -> list[dict]:
     """
-    서울 7일 예보 반환. 각 항목:
+    서울 날씨 반환 (past_days 이전 + days 이후). 각 항목:
       date, weekday, temp_max, temp_min, precip_prob, weather_code, emoji, label
     실패 시 이전 캐시 반환 (없으면 빈 리스트).
     """
-    global _cache, _cache_until
+    global _cache, _cache_until, _cache_past_days
 
     now = datetime.now()
-    if now < _cache_until and _cache:
+    if now < _cache_until and _cache and _cache_past_days == past_days:
         return _cache
 
     try:
@@ -72,6 +73,7 @@ async def fetch_forecast(days: int = 7) -> list[dict]:
                     ]),
                     "timezone": "Asia/Seoul",
                     "forecast_days": days,
+                    "past_days": past_days,
                 },
             )
             resp.raise_for_status()
@@ -95,7 +97,8 @@ async def fetch_forecast(days: int = 7) -> list[dict]:
 
         _cache = result
         _cache_until = now + timedelta(hours=1)
-        logger.info(f"[Open-Meteo] {days}일 예보 수신 완료")
+        _cache_past_days = past_days
+        logger.info(f"[Open-Meteo] past={past_days}+{days}일 수신 완료")
         return result
 
     except Exception as e:
