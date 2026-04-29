@@ -8,12 +8,28 @@ from app.models.price_history import PriceHistory
 from app.schemas.price import PriceHistoryPoint, PriceHistoryResponse, PriceItem, PricesTodayResponse
 
 
+def _price_near(db: Session, item_id: int, target: date, window: int = 4) -> float | None:
+    """
+    target 날짜 직전 window일 이내 가장 최근 가격 반환.
+    KAMIS가 dpr2(전일) 폴백으로 저장하거나 주말·휴일 공백이 생겨도 안전하게 조회.
+    """
+    row = db.execute(
+        select(PriceHistory.price)
+        .where(PriceHistory.item_id == item_id)
+        .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.recorded_date <= target)
+        .where(PriceHistory.recorded_date >= target - timedelta(days=window))
+        .order_by(PriceHistory.recorded_date.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+    return float(row) if row else None
+
+
 def get_today_prices(db: Session) -> PricesTodayResponse:
     """
     품목별 가장 최근 가격을 반환한다.
     오늘 데이터가 없으면 어제 데이터로 자동 폴백.
     """
-    # 서브쿼리: 품목별 최신 recorded_date
     subq = (
         select(
             PriceHistory.item_id,
@@ -37,29 +53,14 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
 
     for item, price, recorded_date in rows:
         price_float = float(price)
-        d7 = recorded_date - timedelta(days=7)
-        d30 = recorded_date - timedelta(days=30)
 
-        past_7d = db.execute(
-            select(PriceHistory.price)
-            .where(PriceHistory.item_id == item.id)
-            .where(PriceHistory.recorded_date == d7)
-            .limit(1)
-        ).scalar_one_or_none()
-
-        past_30d = db.execute(
-            select(PriceHistory.price)
-            .where(PriceHistory.item_id == item.id)
-            .where(PriceHistory.recorded_date == d30)
-            .limit(1)
-        ).scalar_one_or_none()
+        past_7d  = _price_near(db, item.id, recorded_date - timedelta(days=7))
+        past_30d = _price_near(db, item.id, recorded_date - timedelta(days=30))
 
         def rate(past) -> float | None:
-            if past is None or float(past) == 0:
+            if past is None or past == 0:
                 return None
-            return round((price_float - float(past)) / float(past) * 100, 2)
-
-        change_avg = rate(item.avg_year_price) if item.avg_year_price else None
+            return round((price_float - past) / past * 100, 2)
 
         items.append(PriceItem(
             item_id=item.id,
@@ -71,7 +72,7 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             recorded_date=recorded_date,
             change_7d=rate(past_7d),
             change_30d=rate(past_30d),
-            change_avg=change_avg,
+            change_avg=rate(float(item.avg_year_price)) if item.avg_year_price else None,
         ))
 
     display_date = max((i.recorded_date for i in items), default=today)
@@ -99,7 +100,7 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
     if len(points) < 7:
         points = _fetch_points(date.today() - timedelta(days=365))
 
-    # current_price: 30일 창 데이터가 없어도 전체 이력에서 최신값 사용
+    # current_price: 전체 이력에서 최신값 사용
     latest_row = db.execute(
         select(PriceHistory.recorded_date, PriceHistory.price)
         .where(PriceHistory.item_id == item.id)
@@ -111,22 +112,13 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
     current_price = float(latest_row.price) if latest_row else 0.0
     current_date = latest_row.recorded_date if latest_row else date.today()
 
-    def _price_at(d: date) -> float | None:
-        row = db.execute(
-            select(PriceHistory.price)
-            .where(PriceHistory.item_id == item.id)
-            .where(PriceHistory.source == "kamis")
-            .where(PriceHistory.recorded_date == d)
-        ).scalar_one_or_none()
-        return float(row) if row else None
-
     def _rate(past: float | None) -> float | None:
         if past is None or past == 0 or current_price == 0:
             return None
         return round((current_price - past) / past * 100, 2)
 
-    change_7d = _rate(_price_at(current_date - timedelta(days=7)))
-    change_30d = _rate(_price_at(current_date - timedelta(days=30)))
+    change_7d  = _rate(_price_near(db, item.id, current_date - timedelta(days=7)))
+    change_30d = _rate(_price_near(db, item.id, current_date - timedelta(days=30)))
     change_avg = _rate(float(item.avg_year_price)) if item.avg_year_price else None
 
     return PriceHistoryResponse(
