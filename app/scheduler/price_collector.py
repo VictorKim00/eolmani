@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.database import SessionLocal
 from app.models.item import Item
 from app.models.price_history import PriceHistory
-from app.services.kamis_client import extract_avg_year_price, extract_price_and_date, fetch_category, find_item_row
+from app.services.kamis_client import extract_avg_year_price, extract_price_and_date, extract_reference_prices, fetch_category, find_item_row
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="Asia/Seoul")
@@ -84,6 +84,22 @@ async def collect_prices() -> None:
                 avg_year = extract_avg_year_price(row)
                 if avg_year is not None:
                     item.avg_year_price = avg_year
+
+                # dpr3(1주일 전)·dpr5(1개월 전) 기준가 저장 — 별도 백필 없이 변동률 확보
+                for ref_price, ref_date in extract_reference_prices(row, today):
+                    ref_stmt = (
+                        insert(PriceHistory)
+                        .values(
+                            item_id=item.id,
+                            price=ref_price,
+                            recorded_date=date.fromisoformat(ref_date),
+                            source="kamis",
+                        )
+                        .on_conflict_do_nothing(
+                            constraint="uq_price_item_date_source",
+                        )
+                    )
+                    db.execute(ref_stmt)
 
         db.commit()
         logger.info(f"[수집 완료] {today} — {total_saved}건 저장")

@@ -166,6 +166,14 @@ def health():
     return {"status": "ok"}
 
 
+@app.post("/admin/collect")
+async def admin_collect():
+    """수동 가격 수집 트리거 (배포 직후 데이터 갱신용)."""
+    from app.scheduler.price_collector import collect_prices
+    await collect_prices()
+    return {"status": "ok", "message": "수집 완료"}
+
+
 @app.get("/health/db")
 def health_db(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))

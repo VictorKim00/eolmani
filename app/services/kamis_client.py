@@ -117,3 +117,26 @@ def extract_price_and_date(row: dict, today: str) -> tuple[float, str] | None:
         return dpr2, yesterday
 
     return None
+
+
+def extract_reference_prices(row: dict, today: str) -> list[tuple[float, str]]:
+    """
+    KAMIS가 함께 제공하는 과거 기준가 추출.
+    dpr3(1주일 전) / dpr5(1개월 전) → [(price, date), ...]
+    매일 수집 시 이 값을 price_history에 ON CONFLICT DO NOTHING으로 저장하면
+    별도 백필 없이 7일·30일 변동률을 채울 수 있다.
+    """
+    from datetime import date, timedelta
+
+    base = date.fromisoformat(today)
+    results: list[tuple[float, str]] = []
+
+    dpr3 = _parse_price(row.get("dpr3", "-"))
+    if dpr3 and dpr3 > 0:
+        results.append((dpr3, (base - timedelta(days=7)).isoformat()))
+
+    dpr5 = _parse_price(row.get("dpr5", "-"))
+    if dpr5 and dpr5 > 0:
+        results.append((dpr5, (base - timedelta(days=30)).isoformat()))
+
+    return results
