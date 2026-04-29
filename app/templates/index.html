@@ -40,8 +40,9 @@
 
   <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
     {% for day in forecast %}
-    <div class="flex-shrink-0 w-[72px] bg-white rounded-xl border border-gray-100 shadow-sm px-2 py-3 text-center
-      {% if impacts[day.date] is defined %}border-orange-200{% endif %}">
+    {% set day_impacts = impacts.get(day.date, []) %}
+    <div class="flex-shrink-0 w-[72px] bg-white rounded-xl border shadow-sm px-2 py-3 text-center
+      {{ 'border-orange-200' if day_impacts else 'border-gray-100' }}">
       <p class="text-xs text-gray-400 mb-1">{{ day.weekday }}</p>
       <p class="text-lg leading-none mb-1">{{ day.emoji }}</p>
       <p class="text-xs font-bold text-red-400">{{ day.temp_max | int }}°</p>
@@ -49,10 +50,8 @@
       {% if day.precip_prob > 0 %}
       <p class="text-xs text-gray-300 mt-1">💧{{ day.precip_prob }}%</p>
       {% endif %}
-      {% if impacts[day.date] is defined %}
-      <p class="text-xs mt-1">
-        {% for impact in impacts[day.date] %}{{ impact.emoji }}{% endfor %}
-      </p>
+      {% if day_impacts %}
+      <p class="text-xs mt-1">{% for impact in day_impacts %}{{ impact.emoji }}{% endfor %}</p>
       {% endif %}
     </div>
     {% endfor %}
