@@ -83,18 +83,33 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
     if item is None:
         return None
 
-    since = date.today() - timedelta(days=days)
-    rows = db.execute(
+    def _fetch_points(since: date) -> list[PriceHistoryPoint]:
+        rows = db.execute(
+            select(PriceHistory.recorded_date, PriceHistory.price)
+            .where(PriceHistory.item_id == item.id)
+            .where(PriceHistory.source == "kamis")
+            .where(PriceHistory.recorded_date >= since)
+            .order_by(PriceHistory.recorded_date)
+        ).all()
+        return [PriceHistoryPoint(date=r.recorded_date, price=float(r.price)) for r in rows]
+
+    points = _fetch_points(date.today() - timedelta(days=days))
+
+    # 쌀·곡물처럼 주간 업데이트 품목은 30일 창이 너무 좁음 → 1년으로 확장
+    if len(points) < 7:
+        points = _fetch_points(date.today() - timedelta(days=365))
+
+    # current_price: 30일 창 데이터가 없어도 전체 이력에서 최신값 사용
+    latest_row = db.execute(
         select(PriceHistory.recorded_date, PriceHistory.price)
         .where(PriceHistory.item_id == item.id)
         .where(PriceHistory.source == "kamis")
-        .where(PriceHistory.recorded_date >= since)
-        .order_by(PriceHistory.recorded_date)
-    ).all()
+        .order_by(PriceHistory.recorded_date.desc())
+        .limit(1)
+    ).one_or_none()
 
-    points = [PriceHistoryPoint(date=r.recorded_date, price=float(r.price)) for r in rows]
-    current_price = points[-1].price if points else 0.0
-    current_date = points[-1].date if points else date.today()
+    current_price = float(latest_row.price) if latest_row else 0.0
+    current_date = latest_row.recorded_date if latest_row else date.today()
 
     def _price_at(d: date) -> float | None:
         row = db.execute(

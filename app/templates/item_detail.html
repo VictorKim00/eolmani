@@ -78,9 +78,14 @@
 </div>
 {% endif %}
 
-<!-- 30일 차트 -->
+<!-- 가격 추이 차트 -->
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
-  <h2 class="text-sm font-semibold text-gray-500 mb-3">최근 30일 가격 추이</h2>
+  <h2 class="text-sm font-semibold text-gray-500 mb-3">
+    {% if history.points|length > 0 %}
+      {% set span_days = (history.points[-1].date - history.points[0].date).days %}
+      {% if span_days > 60 %}최근 {{ span_days }}일 가격 추이{% else %}최근 30일 가격 추이{% endif %}
+    {% else %}가격 추이{% endif %}
+  </h2>
   <div class="relative" style="height: 220px;">
     <canvas id="priceChart"></canvas>
   </div>
