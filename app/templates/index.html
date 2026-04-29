@@ -27,15 +27,12 @@
 <div class="flex flex-col items-center justify-center py-20 text-center">
   <div class="text-5xl mb-4">🥬</div>
   <h2 class="text-lg font-semibold text-gray-600 mb-2">데이터 수집 준비 중</h2>
-  <p class="text-sm text-gray-400">
-    KAMIS API 연동 후 매일 06:00에 가격이 자동 수집됩니다.<br />
-    잠시 후 다시 확인해 주세요.
-  </p>
+  <p class="text-sm text-gray-400">KAMIS API 연동 후 매일 06:00에 가격이 자동 수집됩니다.<br />잠시 후 다시 확인해 주세요.</p>
 </div>
 
 {% else %}
 
-<!-- 요약 배너 — 신호등 분포 -->
+<!-- 요약 배너 -->
 <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-5 py-4 mb-6">
   <p class="text-xs text-gray-400 mb-3">{{ today }} · KAMIS 기준</p>
   <div class="flex gap-2">
@@ -60,13 +57,10 @@
   {% endif %}
 </div>
 
-<!-- 주간 날씨 + 가격 영향 -->
+<!-- 주간 날씨 -->
 {% if week_days %}
 <section class="mb-8">
-  <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-    🌤️ 이번 주 날씨 · 가격 영향
-  </h2>
-
+  <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🌤️ 이번 주 날씨 · 가격 영향</h2>
   {% if week_summary %}
   <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3">
     {% for summary in week_summary %}
@@ -74,7 +68,6 @@
     {% endfor %}
   </div>
   {% endif %}
-
   <div class="flex gap-2 pb-1">
     {% for day in week_days %}
     {% set day_impacts = impacts.get(day.date, []) %}
@@ -83,8 +76,7 @@
       {% elif day.is_past %}border-gray-100 opacity-40
       {% elif day_impacts %}border-orange-200
       {% else %}border-gray-100{% endif %}">
-      <p class="text-xs mb-1 truncate
-        {% if day.is_today %}text-emerald-600 font-bold{% else %}text-gray-400{% endif %}">
+      <p class="text-xs mb-1 truncate {% if day.is_today %}text-emerald-600 font-bold{% else %}text-gray-400{% endif %}">
         {% if day.is_today %}오늘{% else %}{{ day.weekday }}{% endif %}
       </p>
       {% if day.emoji %}
@@ -110,9 +102,7 @@
 <!-- 이번 달 추천 구매 -->
 {% if season.picks %}
 <section class="mb-8">
-  <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-    📅 {{ season.month }}월 추천 구매 — 지금 사두면 이득
-  </h2>
+  <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">📅 {{ season.month }}월 추천 구매 — 지금 사두면 이득</h2>
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50 overflow-hidden">
     {% for s in season.picks %}
     <a href="/items/{{ s.item_code }}" class="px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors block">
@@ -132,9 +122,7 @@
         <p class="text-xs mt-1 font-medium
           {% if s.stats.pct_diff < 0 %}text-blue-500
           {% elif s.stats.pct_diff > 0 %}text-red-500
-          {% else %}text-gray-400{% endif %}">
-          {{ s.stats.label }}
-        </p>
+          {% else %}text-gray-400{% endif %}">{{ s.stats.label }}</p>
         {% endif %}
       </div>
     </a>
@@ -143,7 +131,7 @@
 </section>
 {% endif %}
 
-<!-- 오늘의 특가 TOP 5 -->
+<!-- 오늘의 특가 -->
 {% if deals %}
 <section class="mb-8">
   <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🔥 오늘의 특가 — 평소보다 저렴해요</h2>
@@ -160,7 +148,7 @@
         {% if div_info %}
         <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
         {% endif %}
-        <p class="text-xs font-semibold text-blue-500 mt-0.5">▼{{ "%.1f"|format(item.change_7d|abs) }}% 7일 전 대비</p>
+        <p class="text-xs font-semibold text-blue-500 mt-0.5">▼{{ "%.1f"|format(item.change_7d|abs) }}% 7일 전</p>
       </div>
     </a>
     {% endfor %}
@@ -168,9 +156,43 @@
 </section>
 {% endif %}
 
+<!-- ── 탭 필터 + 검색 (sticky) ──────────────────────────────────── -->
+<div id="filter-bar" class="sticky top-14 z-10 bg-gray-50 pb-3 -mx-4 px-4 pt-1">
+  <!-- 검색창 -->
+  <div class="relative mb-2.5">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+    <input
+      id="search-input"
+      type="text"
+      placeholder="품목 검색..."
+      class="w-full bg-white border border-gray-200 rounded-xl pl-8 pr-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100 transition-colors"
+    />
+  </div>
+  <!-- 카테고리 탭 -->
+  <div class="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+    <button
+      data-tab="전체"
+      class="tab-btn shrink-0 text-xs px-3 py-1.5 rounded-xl border font-semibold transition-colors bg-gray-800 text-white border-gray-800">
+      전체 <span class="opacity-60">{{ total_count }}</span>
+    </button>
+    {% for cat, cards in category_cards.items() %}
+    <button
+      data-tab="{{ cat }}"
+      class="tab-btn shrink-0 text-xs px-3 py-1.5 rounded-xl border font-medium transition-colors bg-white text-gray-500 border-gray-200 hover:border-gray-400">
+      {{ category_emoji.get(cat, "🏷️") }} {{ cat }} <span class="opacity-50">{{ category_counts[cat] }}</span>
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 검색 결과 없음 메시지 -->
+<div id="no-results" class="hidden py-10 text-center">
+  <p class="text-gray-400 text-sm">검색 결과가 없어요</p>
+</div>
+
 <!-- 카테고리별 섹션 -->
 {% for category, cards in category_cards.items() %}
-<section class="mb-8">
+<section data-section="{{ category }}" class="mb-8">
   <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
     {{ category_emoji.get(category, "🏷️") }} {{ category }}
   </h2>
@@ -178,12 +200,16 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
     {% for card in cards %}
 
-    {# ── 그룹 카드 (부위·품종 여러 개 묶음) ── #}
+    {# ── 그룹 카드 ── #}
     {% if card.is_group %}
     {% set def = card.default %}
     {% set def_sig = signals[def.code] %}
     {% set div_info = unit_divisor.get(def.unit) %}
-    <a href="/items/{{ def.code }}" class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md hover:border-gray-200 transition-all block">
+    {% set search_name = card.group_name + ' ' + (card.variants | map(attribute='variant_label') | join(' ')) %}
+    <a href="/items/{{ def.code }}"
+       data-cat="{{ category }}"
+       data-name="{{ search_name | lower }}"
+       class="item-card bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md hover:border-gray-200 transition-all block">
       <div class="flex justify-between items-start mb-2">
         <div class="min-w-0">
           <div class="flex items-center gap-2">
@@ -203,7 +229,6 @@
           </div>
         </div>
       </div>
-      <!-- 변형 탭 목록 -->
       <div class="flex flex-wrap gap-1.5 pt-2 border-t border-gray-50">
         {% for v in card.variants %}
         {% set v_sig = signals[v.code] %}
@@ -224,7 +249,10 @@
     {% set item = card.item %}
     {% set sig = signals[item.code] %}
     {% set div_info = unit_divisor.get(item.unit) %}
-    <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-gray-200 transition-all">
+    <a href="/items/{{ item.code }}"
+       data-cat="{{ category }}"
+       data-name="{{ item.name | lower }}"
+       class="item-card bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-gray-200 transition-all">
       <div class="min-w-0">
         <div class="flex items-center gap-2">
           <span class="text-base">{{ signal_emoji[sig] }}</span>
@@ -255,4 +283,80 @@
 
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+{% if category_cards %}
+<script>
+  let activeTab = '전체';
+
+  const searchInput = document.getElementById('search-input');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const sections = document.querySelectorAll('[data-section]');
+  const cards = document.querySelectorAll('.item-card');
+  const noResults = document.getElementById('no-results');
+
+  function applyFilter() {
+    const query = searchInput.value.toLowerCase().trim();
+
+    // 검색 중이면 탭 무시하고 전체에서 검색
+    const catFilter = query ? '전체' : activeTab;
+
+    let totalVisible = 0;
+
+    sections.forEach(section => {
+      const sectionCat = section.dataset.section;
+      const tabMatch = catFilter === '전체' || catFilter === sectionCat;
+
+      let sectionVisible = 0;
+      section.querySelectorAll('.item-card').forEach(card => {
+        const nameMatch = !query || card.dataset.name.includes(query);
+        const show = tabMatch && nameMatch;
+        card.style.display = show ? '' : 'none';
+        if (show) sectionVisible++;
+      });
+
+      section.style.display = (tabMatch && sectionVisible > 0) ? '' : 'none';
+      totalVisible += sectionVisible;
+    });
+
+    noResults.classList.toggle('hidden', totalVisible > 0);
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    tabBtns.forEach(btn => {
+      const isActive = btn.dataset.tab === tab;
+      btn.classList.toggle('bg-gray-800', isActive);
+      btn.classList.toggle('text-white', isActive);
+      btn.classList.toggle('border-gray-800', isActive);
+      btn.classList.toggle('bg-white', !isActive);
+      btn.classList.toggle('text-gray-500', !isActive);
+      btn.classList.toggle('border-gray-200', !isActive);
+    });
+    applyFilter();
+  }
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      searchInput.value = '';
+      setTab(btn.dataset.tab);
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    // 검색 중 탭은 시각적으로 전체로 표시
+    if (searchInput.value.trim()) {
+      tabBtns.forEach(btn => {
+        const isAll = btn.dataset.tab === '전체';
+        btn.classList.toggle('bg-gray-800', isAll);
+        btn.classList.toggle('text-white', isAll);
+        btn.classList.toggle('border-gray-800', isAll);
+        btn.classList.toggle('bg-white', !isAll);
+        btn.classList.toggle('text-gray-500', !isAll);
+        btn.classList.toggle('border-gray-200', !isAll);
+      });
+    }
+    applyFilter();
+  });
+</script>
+{% endif %}
+{% endblock %}

@@ -181,12 +181,15 @@ async def index(request: Request, db: Session = Depends(get_db)):
         else:
             pick["signal"] = None
 
+    category_counts = {cat: len(cards) for cat, cards in category_cards.items()}
+
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "today": today_date.strftime("%Y년 %m월 %d일"),
             "category_cards": category_cards,
+            "category_counts": category_counts,
             "category_emoji": CATEGORY_EMOJI,
             "unit_divisor": UNIT_DIVISOR,
             "total_count": data.count,
