@@ -15,6 +15,7 @@ from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
+from app.services.regions import REGION_LABEL, REGIONS, normalize_region
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal, get_action
 from app.services.weather_client import WEEKDAY_KO, fetch_forecast
@@ -122,8 +123,9 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/")
-async def index(request: Request, db: Session = Depends(get_db)):
-    data = get_today_prices(db)
+async def index(request: Request, region: str = "", db: Session = Depends(get_db)):
+    region_code = normalize_region(region)
+    data = get_today_prices(db, region_code=region_code)
 
     # 카테고리별 그룹핑 → 그룹 카드 목록으로 변환
     raw_categories: dict[str, list] = defaultdict(list)
@@ -227,13 +229,17 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "week_days": week_days,
             "impacts": impacts,
             "week_summary": week_summary,
+            "regions": REGIONS,
+            "current_region_code": region_code,
+            "current_region_label": REGION_LABEL[region_code],
         },
     )
 
 
 @app.get("/items/{item_code}")
-async def item_detail(item_code: str, request: Request, db: Session = Depends(get_db)):
-    history = get_item_history(db, item_code)
+async def item_detail(item_code: str, request: Request, region: str = "", db: Session = Depends(get_db)):
+    region_code = normalize_region(region)
+    history = get_item_history(db, item_code, region_code=region_code)
     if history is None:
         raise HTTPException(status_code=404, detail="품목을 찾을 수 없습니다")
 
@@ -277,6 +283,9 @@ async def item_detail(item_code: str, request: Request, db: Session = Depends(ge
             "group_display_name": GROUP_DISPLAY_NAMES.get(
                 current_item.group_code if current_item else "", ""
             ),
+            "regions": REGIONS,
+            "current_region_code": region_code,
+            "current_region_label": REGION_LABEL[region_code],
         },
     )
 

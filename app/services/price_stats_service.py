@@ -20,11 +20,13 @@ def get_month_vs_annual(db: Session, item_code: str, month: int) -> dict | None:
     if item is None:
         return None
 
+    # 월별 통계는 항상 전국 평균(region_code='') 기준 — 표본 일관성 유지
     # 특정 월 평균가 (모든 연도 합산)
     month_avg = db.execute(
         select(func.avg(PriceHistory.price))
         .where(PriceHistory.item_id == item.id)
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == "")
         .where(func.extract("month", PriceHistory.recorded_date) == month)
     ).scalar()
 
@@ -33,6 +35,7 @@ def get_month_vs_annual(db: Session, item_code: str, month: int) -> dict | None:
         select(func.count(PriceHistory.id))
         .where(PriceHistory.item_id == item.id)
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == "")
         .where(func.extract("month", PriceHistory.recorded_date) == month)
     ).scalar() or 0
 
@@ -41,6 +44,7 @@ def get_month_vs_annual(db: Session, item_code: str, month: int) -> dict | None:
         select(func.avg(PriceHistory.price))
         .where(PriceHistory.item_id == item.id)
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == "")
     ).scalar()
 
     if month_avg is None or annual_avg is None or month_days < 10:

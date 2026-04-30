@@ -35,13 +35,18 @@ def _parse_price(value: str) -> float | None:
         return None
 
 
-async def fetch_category(category_code: str, regday: str) -> list[dict]:
+async def fetch_category(
+    category_code: str,
+    regday: str,
+    country_code: str = "",  # ''=전국 평균 (기본값)
+) -> list[dict]:
     """
     KAMIS에서 특정 부류의 소매 가격 목록을 조회한다.
 
     Args:
         category_code: 부류코드 ("100"=식량, "200"=채소, "400"=과일, "500"=축산, "600"=수산)
         regday: 조회일 "YYYY-MM-DD"
+        country_code: 지역코드 (''=전국 평균, '1101'=서울, '2100'=부산 등)
 
     Returns:
         KAMIS item 배열 (각 항목: item_code, kind_code, rank, dpr1~dpr7 등)
@@ -58,7 +63,7 @@ async def fetch_category(category_code: str, regday: str) -> list[dict]:
         "p_returntype": "json",
         "p_product_cls_code": "01",        # 소매
         "p_item_category_code": category_code,
-        "p_country_code": "1101",          # 서울
+        "p_country_code": country_code,
         "p_regday": regday,
         "p_convert_kg_yn": "N",
     }
@@ -73,7 +78,8 @@ async def fetch_category(category_code: str, regday: str) -> list[dict]:
         data = resp.json()
 
     items: list[dict] = data.get("data", {}).get("item", [])
-    logger.info(f"[KAMIS] category={category_code} / {regday} → {len(items)}건")
+    region_label = country_code if country_code else "전국"
+    logger.info(f"[KAMIS] cat={category_code} region={region_label} / {regday} → {len(items)}건")
     return items
 
 

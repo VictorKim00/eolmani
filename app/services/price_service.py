@@ -8,7 +8,13 @@ from app.models.price_history import PriceHistory
 from app.schemas.price import PriceHistoryPoint, PriceHistoryResponse, PriceItem, PricesTodayResponse
 
 
-def _price_near(db: Session, item_id: int, target: date, window: int = 4) -> float | None:
+def _price_near(
+    db: Session,
+    item_id: int,
+    target: date,
+    region_code: str,
+    window: int = 4,
+) -> float | None:
     """
     target 날짜 직전 window일 이내 가장 최근 가격 반환.
     KAMIS가 dpr2(전일) 폴백으로 저장하거나 주말·휴일 공백이 생겨도 안전하게 조회.
@@ -17,6 +23,7 @@ def _price_near(db: Session, item_id: int, target: date, window: int = 4) -> flo
         select(PriceHistory.price)
         .where(PriceHistory.item_id == item_id)
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == region_code)
         .where(PriceHistory.recorded_date <= target)
         .where(PriceHistory.recorded_date >= target - timedelta(days=window))
         .order_by(PriceHistory.recorded_date.desc())
@@ -31,10 +38,11 @@ def _change_rate(current: float, past: float | None) -> float | None:
     return round((current - past) / past * 100, 2)
 
 
-def get_today_prices(db: Session) -> PricesTodayResponse:
+def get_today_prices(db: Session, region_code: str = "") -> PricesTodayResponse:
     """
     품목별 가장 최근 가격을 반환한다.
     오늘 데이터가 없으면 어제 데이터로 자동 폴백.
+    region_code='' 이 전국 평균, '1101'=서울 등.
     """
     subq = (
         select(
@@ -44,6 +52,7 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
         )
         .distinct(PriceHistory.item_id)  # PostgreSQL DISTINCT ON 전용
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == region_code)
         .order_by(PriceHistory.item_id, PriceHistory.recorded_date.desc())
         .subquery()
     )
@@ -55,12 +64,33 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
     ).all()
 
     today = date.today()
+
+    # 지역 선택 시 전국 평균 가격을 한 번에 조회 (N+1 없이 vs_nation 계산)
+    nation_price_by_item: dict[int, float] = {}
+    if region_code != "":
+        nation_subq = (
+            select(PriceHistory.item_id, PriceHistory.price)
+            .distinct(PriceHistory.item_id)
+            .where(PriceHistory.source == "kamis")
+            .where(PriceHistory.region_code == "")
+            .order_by(PriceHistory.item_id, PriceHistory.recorded_date.desc())
+            .subquery()
+        )
+        for item_id, p in db.execute(select(nation_subq.c.item_id, nation_subq.c.price)).all():
+            nation_price_by_item[item_id] = float(p)
+
     items: list[PriceItem] = []
 
     for item, price, recorded_date in rows:
         price_float = float(price)
-        past_7d  = _price_near(db, item.id, recorded_date - timedelta(days=7))
-        past_30d = _price_near(db, item.id, recorded_date - timedelta(days=30))
+        past_7d  = _price_near(db, item.id, recorded_date - timedelta(days=7),  region_code)
+        past_30d = _price_near(db, item.id, recorded_date - timedelta(days=30), region_code)
+
+        vs_nation = None
+        if region_code != "" and item.id in nation_price_by_item:
+            np = nation_price_by_item[item.id]
+            if np > 0:
+                vs_nation = round((price_float - np) / np * 100, 1)
 
         items.append(PriceItem(
             item_id=item.id,
@@ -76,13 +106,14 @@ def get_today_prices(db: Session) -> PricesTodayResponse:
             group_code=item.group_code,
             variant_label=item.variant_label,
             sort_order=item.sort_order,
+            vs_nation=vs_nation,
         ))
 
     display_date = max((i.recorded_date for i in items), default=today)
-    return PricesTodayResponse(date=display_date, count=len(items), items=items)
+    return PricesTodayResponse(date=display_date, region_code=region_code, count=len(items), items=items)
 
 
-def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistoryResponse | None:
+def get_item_history(db: Session, item_code: str, days: int = 30, region_code: str = "") -> PriceHistoryResponse | None:
     item = db.execute(select(Item).where(Item.code == item_code)).scalar_one_or_none()
     if item is None:
         return None
@@ -92,6 +123,7 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
             select(PriceHistory.recorded_date, PriceHistory.price)
             .where(PriceHistory.item_id == item.id)
             .where(PriceHistory.source == "kamis")
+            .where(PriceHistory.region_code == region_code)
             .where(PriceHistory.recorded_date >= since)
             .order_by(PriceHistory.recorded_date)
         ).all()
@@ -103,20 +135,21 @@ def get_item_history(db: Session, item_code: str, days: int = 30) -> PriceHistor
     if len(points) < 7:
         points = _fetch_points(date.today() - timedelta(days=365))
 
-    # current_price: 전체 이력에서 최신값 사용
+    # current_price: 전체 이력에서 해당 지역 최신값 사용
     latest_row = db.execute(
         select(PriceHistory.recorded_date, PriceHistory.price)
         .where(PriceHistory.item_id == item.id)
         .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.region_code == region_code)
         .order_by(PriceHistory.recorded_date.desc())
         .limit(1)
     ).one_or_none()
 
     current_price = float(latest_row.price) if latest_row else 0.0
-    current_date = latest_row.recorded_date if latest_row else date.today()
+    current_date  = latest_row.recorded_date if latest_row else date.today()
 
-    change_7d  = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=7)))
-    change_30d = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=30)))
+    change_7d  = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=7),  region_code))
+    change_30d = _change_rate(current_price, _price_near(db, item.id, current_date - timedelta(days=30), region_code))
     change_avg = _change_rate(current_price, float(item.avg_year_price)) if item.avg_year_price else None
 
     return PriceHistoryResponse(

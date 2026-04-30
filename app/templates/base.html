@@ -19,7 +19,17 @@
         <a href="/" class="text-xl font-bold text-emerald-600">얼마니</a>
         <span class="ml-2 text-xs text-gray-400">오늘 가격 얼마니?</span>
       </div>
-      <span class="text-xs text-gray-400">{{ today }}</span>
+      <div class="flex items-center gap-3">
+        {% if regions is defined %}
+        <select id="region-selector"
+                class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none focus:border-emerald-400 cursor-pointer">
+          {% for code, label in regions %}
+          <option value="{{ code }}" {% if code == current_region_code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        <span class="text-xs text-gray-400">{{ today }}</span>
+      </div>
     </div>
   </header>
 
@@ -30,10 +40,40 @@
 
   <!-- 푸터 -->
   <footer class="max-w-3xl mx-auto px-4 py-6 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
-    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a> · 도소매 조사 평균 · 서울 기준</p>
+    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a> · 도소매 조사 평균 · {% if current_region_label is defined %}{{ current_region_label }}{% else %}전국 평균{% endif %} 기준</p>
     <p class="mt-1">마트별 실제 가격과 다를 수 있습니다 · 얼마니는 비상업 무료 서비스입니다.</p>
   </footer>
 
   {% block scripts %}{% endblock %}
+
+  <script>
+    (function () {
+      const KEY = 'eolmani.region';
+      const sel = document.getElementById('region-selector');
+      if (!sel) return;
+
+      const url = new URL(window.location.href);
+      const urlRegion = url.searchParams.get('region') ?? '';
+      const stored = localStorage.getItem(KEY) ?? '';
+
+      // URL에 ?region= 없고 저장값이 있으면 한 번만 redirect
+      if (!url.searchParams.has('region') && stored !== '') {
+        url.searchParams.set('region', stored);
+        window.location.replace(url.toString());
+        return;
+      }
+      // 현재 URL 지역을 localStorage에 동기화
+      localStorage.setItem(KEY, urlRegion);
+
+      sel.addEventListener('change', () => {
+        const next = sel.value;
+        localStorage.setItem(KEY, next);
+        const u = new URL(window.location.href);
+        if (next === '') u.searchParams.delete('region');
+        else u.searchParams.set('region', next);
+        window.location.href = u.toString();
+      });
+    })();
+  </script>
 </body>
 </html>

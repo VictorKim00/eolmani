@@ -217,12 +217,17 @@
             <p class="font-semibold text-gray-800 truncate">{{ card.group_name }}</p>
             {{ signal_pill(def_sig) }}
           </div>
-          <p class="text-xs text-gray-400 mt-1">{{ def.unit }} · 전국 평균</p>
+          <p class="text-xs text-gray-400 mt-1">{{ def.unit }} · {{ current_region_label }}</p>
         </div>
         <div class="text-right shrink-0 ml-3">
           <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(def.price) }}원</p>
           {% if div_info %}
           <p class="text-xs text-gray-400">{{ "{:,.0f}".format((def.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
+          {% endif %}
+          {% if def.vs_nation is not none %}
+          <p class="text-xs mt-0.5 {% if def.vs_nation > 0 %}text-red-400{% elif def.vs_nation < 0 %}text-blue-400{% else %}text-gray-400{% endif %}">
+            전국 대비 {{ "%+.1f"|format(def.vs_nation) }}%
+          </p>
           {% endif %}
           <div class="flex gap-2 justify-end mt-1">
             {{ change_badge(def.change_7d, "7일") }}
@@ -259,12 +264,17 @@
           <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
           {{ signal_pill(sig) }}
         </div>
-        <p class="text-xs text-gray-400 mt-1">{{ item.unit }} · 전국 평균</p>
+        <p class="text-xs text-gray-400 mt-1">{{ item.unit }} · {{ current_region_label }}</p>
       </div>
       <div class="text-right shrink-0 ml-3">
         <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원</p>
         {% if div_info %}
         <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
+        {% endif %}
+        {% if item.vs_nation is not none %}
+        <p class="text-xs mt-0.5 {% if item.vs_nation > 0 %}text-red-400{% elif item.vs_nation < 0 %}text-blue-400{% else %}text-gray-400{% endif %}">
+          전국 대비 {{ "%+.1f"|format(item.vs_nation) }}%
+        </p>
         {% endif %}
         <div class="flex gap-2 justify-end mt-1">
           {{ change_badge(item.change_7d, "7일") }}

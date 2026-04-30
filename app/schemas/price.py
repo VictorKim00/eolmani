@@ -17,12 +17,14 @@ class PriceItem(BaseModel):
     group_code: str | None = None
     variant_label: str | None = None
     sort_order: int = 0
+    vs_nation: float | None = None  # 전국 평균 대비 % (지역 선택 시)
 
     model_config = {"from_attributes": True}
 
 
 class PricesTodayResponse(BaseModel):
     date: date
+    region_code: str = ""
     count: int
     items: list[PriceItem]
 
