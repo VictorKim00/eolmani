@@ -15,7 +15,7 @@ from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
-from app.services.regions import REGION_COORDS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
+from app.services.regions import REGION_COORDS, REGION_GROUPS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal, get_action
 from app.services.weather_client import WEEKDAY_KO, fetch_forecast
@@ -231,6 +231,7 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "impacts": impacts,
             "week_summary": week_summary,
             "regions": REGIONS,
+            "region_groups": REGION_GROUPS,
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
             "weather_location_label": REGION_WEATHER_LABEL[region_code],
@@ -286,6 +287,7 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
                 current_item.group_code if current_item else "", ""
             ),
             "regions": REGIONS,
+            "region_groups": REGION_GROUPS,
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
         },

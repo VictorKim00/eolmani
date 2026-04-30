@@ -20,11 +20,21 @@
         <span class="ml-2 text-xs text-gray-400">오늘 가격 얼마니?</span>
       </div>
       <div class="flex items-center gap-3">
-        {% if regions is defined %}
+        {% if region_groups is defined %}
         <select id="region-selector"
                 class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none focus:border-emerald-400 cursor-pointer">
-          {% for code, label in regions %}
-          <option value="{{ code }}" {% if code == current_region_code %}selected{% endif %}>{{ label }}</option>
+          {% for group_label, group_regions in region_groups %}
+          {% if not group_label %}
+            {% for code, label in group_regions %}
+            <option value="{{ code }}" {% if code == current_region_code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          {% else %}
+          <optgroup label="{{ group_label }}">
+            {% for code, label in group_regions %}
+            <option value="{{ code }}" {% if code == current_region_code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </optgroup>
+          {% endif %}
           {% endfor %}
         </select>
         {% endif %}
