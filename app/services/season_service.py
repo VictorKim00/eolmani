@@ -11,10 +11,10 @@ SEASON_CALENDAR: dict[int, list[dict]] = {
     1: [
         {"emoji": "🍊", "name": "한라봉·감귤", "reason": "겨울 제철 절정", "item_code": "mandarin"},
         {"emoji": "🐟", "name": "갈치", "reason": "겨울 제철 수산물", "item_code": "hairtail"},
-        {"emoji": "🍓", "name": "딸기", "reason": "출하 피크 — 1~2월이 연중 최대 물량", "item_code": None},
+        {"emoji": "🍓", "name": "딸기", "reason": "출하 피크 — 1~2월이 연중 최대 물량", "item_code": "strawberry"},
     ],
     2: [
-        {"emoji": "🍓", "name": "딸기", "reason": "제철 막바지 — 잼·청 담기 좋은 시기", "item_code": None},
+        {"emoji": "🍓", "name": "딸기", "reason": "제철 막바지 — 잼·청 담기 좋은 시기", "item_code": "strawberry"},
         {"emoji": "🐟", "name": "고등어", "reason": "겨울 제철 수산물", "item_code": "mackerel"},
         {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 시작 — 겨울보다 저렴해지는 시기", "item_code": "spinach"},
     ],
@@ -24,22 +24,22 @@ SEASON_CALENDAR: dict[int, list[dict]] = {
         {"emoji": "🥬", "name": "배추", "reason": "봄 배추 출하", "item_code": "cabbage"},
     ],
     4: [
-        {"emoji": "🌿", "name": "봄나물 (쑥·봄동)", "reason": "봄 제철 절정 — 지금 아니면 내년까지", "item_code": None},
+        {"emoji": "🍓", "name": "딸기", "reason": "봄 제철 막바지 — 마지막 제철 딸기 시기", "item_code": "strawberry"},
         {"emoji": "🧅", "name": "양파", "reason": "햇양파 출하 전, 시즌 직전 가격 확인", "item_code": "onion"},
         {"emoji": "🥬", "name": "시금치", "reason": "봄 출하 피크 시기", "item_code": "spinach"},
     ],
     5: [
-        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌용 — 6월 초 이전 구매 권장", "item_code": None},
+        {"emoji": "🍉", "name": "수박", "reason": "초여름 출하 시작 — 6~7월이 연중 최저가", "item_code": "watermelon"},
+        {"emoji": "🍈", "name": "참외", "reason": "제철 출하 시작 — 5~6월이 가장 달고 저렴", "item_code": "korean_melon"},
         {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 시작", "item_code": "garlic"},
-        {"emoji": "🥬", "name": "배추", "reason": "봄 배추 출하", "item_code": "cabbage"},
     ],
     6: [
+        {"emoji": "🍉", "name": "수박", "reason": "여름 수박 절정 — 지금이 연중 최저가", "item_code": "watermelon"},
+        {"emoji": "🍈", "name": "참외", "reason": "제철 절정 — 대량 소비 적기", "item_code": "korean_melon"},
         {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 절정 — 1년치 비축 시기", "item_code": "garlic"},
-        {"emoji": "🧅", "name": "양파", "reason": "햇양파 대량 출하 — 대량 구매 적기", "item_code": "onion"},
-        {"emoji": "🟢", "name": "매실", "reason": "매실청·장아찌 막바지 — 6월 중순까지", "item_code": None},
     ],
     7: [
-        {"emoji": "🧅", "name": "양파", "reason": "여름 재고 소진 전 마지막 구간", "item_code": "onion"},
+        {"emoji": "🍉", "name": "수박", "reason": "여름 제철 절정 — 무더위 최대 소비 시기", "item_code": "watermelon"},
         {"emoji": "🥒", "name": "오이", "reason": "여름 제철 출하 피크", "item_code": "cucumber"},
         {"emoji": "🥬", "name": "애호박", "reason": "여름 제철 출하 피크", "item_code": "zucchini"},
     ],
