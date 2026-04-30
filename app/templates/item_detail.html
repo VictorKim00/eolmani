@@ -209,10 +209,15 @@
   }
 
   function yRange(prices) {
-    const allVals = avgYear ? [...prices, avgYear] : prices;
-    const mn = Math.min(...allVals), mx = Math.max(...allVals);
-    const pad = (mx - mn) * 0.25 || mx * 0.05;
-    return { min: Math.floor(mn - pad), max: Math.ceil(mx + pad) };
+    const mn = Math.min(...prices), mx = Math.max(...prices);
+    const pad = (mx - mn) * 0.08 || mx * 0.03;
+    const lo = Math.floor(mn - pad);
+    const hi = Math.ceil(mx + pad);
+    // avgYear가 범위 밖이면 포함되도록 확장
+    return {
+      min: avgYear ? Math.min(lo, Math.floor(avgYear * 0.98)) : lo,
+      max: avgYear ? Math.max(hi, Math.ceil(avgYear * 1.02)) : hi,
+    };
   }
 
   function buildDatasets(prices) {
