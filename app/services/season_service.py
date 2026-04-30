@@ -44,14 +44,14 @@ SEASON_CALENDAR: dict[int, list[dict]] = {
         {"emoji": "🥬", "name": "애호박", "reason": "여름 제철 출하 피크", "item_code": "zucchini"},
     ],
     8: [
+        {"emoji": "🍑", "name": "복숭아", "reason": "제철 절정 — 8월 안에 소비", "item_code": "peach"},
+        {"emoji": "🍇", "name": "포도", "reason": "캠벨·샤인머스켓 출하 피크 — 대량 구매 적기", "item_code": "grape_campbell"},
         {"emoji": "🥒", "name": "오이", "reason": "여름 제철 절정", "item_code": "cucumber"},
-        {"emoji": "🥬", "name": "애호박", "reason": "여름 제철 절정", "item_code": "zucchini"},
-        {"emoji": "🍑", "name": "복숭아", "reason": "제철 절정 — 8월 안에 소비", "item_code": None},
     ],
     9: [
+        {"emoji": "🍇", "name": "포도", "reason": "샤인머스켓 최성수기 — 추석 전 대량 구매", "item_code": "grape_shine"},
         {"emoji": "🍎", "name": "사과", "reason": "햇사과 출하 — 추석 전 대량 구매", "item_code": "apple"},
         {"emoji": "🍐", "name": "배", "reason": "햇배 출하 — 추석 전 대량 구매", "item_code": "pear"},
-        {"emoji": "🐟", "name": "고등어", "reason": "가을 제철 수산물", "item_code": "mackerel"},
     ],
     10: [
         {"emoji": "🍎", "name": "사과", "reason": "추석 이후 가격 안정기", "item_code": "apple"},

@@ -45,6 +45,7 @@ GROUP_DISPLAY_NAMES: dict[str, str] = {
     "cucumber": "오이",
     "pumpkin": "호박",
     "lettuce": "상추",
+    "grape": "포도",
 }
 
 

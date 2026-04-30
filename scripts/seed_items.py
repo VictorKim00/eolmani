@@ -67,6 +67,9 @@ ITEMS = [
     {"code": "korean_melon",    "name": "참외",           "category": "과일", "unit": "10개",  "kamis_category_code": "200", "kamis_item_code": "222",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "melon",           "name": "멜론",           "category": "과일", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "257",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "banana",          "name": "바나나",         "category": "과일", "unit": "100g",  "kamis_category_code": "400", "kamis_item_code": "418",  "kamis_kind_code": "02", "kamis_rank": "상품"},
+    {"code": "peach",           "name": "복숭아",         "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "413",  "kamis_kind_code": "01", "kamis_rank": "상품"},   # 백도. 비시즌(10~6월) 데이터 없음
+    {"code": "grape_campbell",  "name": "포도(캠벨)",     "category": "과일", "unit": "1kg",   "kamis_category_code": "400", "kamis_item_code": "414",  "kamis_kind_code": "01", "kamis_rank": "L과",    "group_code": "grape", "variant_label": "캠벨얼리", "sort_order": 1},
+    {"code": "grape_shine",     "name": "포도(샤인머스켓)", "category": "과일", "unit": "2kg",   "kamis_category_code": "400", "kamis_item_code": "414",  "kamis_kind_code": "12", "kamis_rank": "L과",    "group_code": "grape", "variant_label": "샤인머스켓", "sort_order": 2},
     # ── 축산 (category 500) ─────────────────────────────────────────
     # 한우 그룹: 주요 4개 부위 (모두 100g, 1등급 기준)
     {"code": "beef_sirloin",    "name": "한우 등심",   "category": "축산", "unit": "100g", "kamis_category_code": "500", "kamis_item_code": "4301", "kamis_kind_code": "22", "kamis_rank": "1등급",  "group_code": "beef_korean", "variant_label": "등심",  "sort_order": 1},
