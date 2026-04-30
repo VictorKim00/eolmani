@@ -208,11 +208,21 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
 
     category_counts = {cat: len(cards) for cat, cards in category_cards.items()}
 
+    # 데이터 기준일 라벨
+    last_data_date = max((i.recorded_date for i in data.items), default=None)
+    if last_data_date is None or last_data_date == today_date:
+        data_date_label = "오늘"
+    elif last_data_date == today_date - timedelta(days=1):
+        data_date_label = "어제"
+    else:
+        data_date_label = last_data_date.strftime("%-m/%-d")
+
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "today": today_date.strftime("%Y년 %m월 %d일"),
+            "data_date_label": data_date_label,
             "category_cards": category_cards,
             "category_counts": category_counts,
             "category_emoji": CATEGORY_EMOJI,
@@ -266,11 +276,24 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             .order_by(ItemModel.sort_order)
         ).scalars().all()
 
+    # 데이터 기준일 라벨
+    if history.points:
+        last_point_date = history.points[-1].date
+        if last_point_date == today_date:
+            data_date_label = "오늘"
+        elif last_point_date == today_date - timedelta(days=1):
+            data_date_label = "어제"
+        else:
+            data_date_label = last_point_date.strftime("%-m/%-d")
+    else:
+        data_date_label = "오늘"
+
     return templates.TemplateResponse(
         request,
         "item_detail.html",
         {
             "today": today_date.strftime("%Y년 %m월 %d일"),
+            "data_date_label": data_date_label,
             "history": history,
             "signal": signal,
             "signal_emoji": SIGNAL_EMOJI,

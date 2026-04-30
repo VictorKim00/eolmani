@@ -39,7 +39,12 @@
           {% endfor %}
         </select>
         {% endif %}
-        <span class="text-xs text-gray-400">{{ today }}</span>
+        <span class="text-xs text-gray-400">
+          {{ today }}
+          {% if data_date_label is defined and data_date_label != '오늘' %}
+          <span class="ml-1 text-orange-400">· {{ data_date_label }} 기준</span>
+          {% endif %}
+        </span>
       </div>
     </div>
   </header>
