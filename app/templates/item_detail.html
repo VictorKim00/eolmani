@@ -102,40 +102,6 @@
   </div>
 </div>
 
-<!-- 산지 날씨 -->
-{% if origin_forecast %}
-<section class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
-  <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🌾 산지 날씨 · {{ origin_label }}</h2>
-  <div class="flex gap-2">
-    {% for day in origin_forecast %}
-    {% set day_impacts = origin_impacts.get(day.date, []) %}
-    <div class="flex-1 min-w-0 rounded-xl border px-1 py-3 text-center
-      {% if day.is_today is defined and day.is_today %}border-emerald-300 ring-1 ring-emerald-100
-      {% elif day_impacts %}border-orange-200 bg-orange-50
-      {% else %}border-gray-100{% endif %}">
-      <p class="text-xs mb-1 truncate text-gray-400">
-        {% if loop.first %}오늘{% else %}{{ day.weekday }}{% endif %}
-      </p>
-      {% if day.emoji %}
-      <p class="text-base leading-none mb-1">{{ day.emoji }}</p>
-      <p class="text-xs font-bold text-red-400">{{ day.temp_max | int }}°</p>
-      <p class="text-xs text-blue-400">{{ day.temp_min | int }}°</p>
-      {% if day.precip_prob > 0 %}
-      <p class="text-xs text-gray-300 mt-1">💧{{ day.precip_prob }}%</p>
-      {% endif %}
-      {% if day_impacts %}
-      <p class="text-xs mt-1">{% for impact in day_impacts %}{{ impact.emoji }}{% endfor %}</p>
-      {% endif %}
-      {% else %}
-      <p class="text-lg leading-none text-gray-200 mt-1">—</p>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  <p class="text-xs text-gray-300 mt-2 text-right">Open-Meteo · {{ origin_label }} 기준</p>
-</section>
-{% endif %}
-
 <!-- 이번 달 통계 -->
 {% if month_stats %}
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
