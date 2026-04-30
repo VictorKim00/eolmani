@@ -184,17 +184,22 @@
   const prices = {{ chart_prices | tojson }};
   const avgYear = {{ history.avg_year_price | tojson }};
 
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+  gradient.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
+  gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+
   const datasets = [
     {
       label: '가격',
       data: prices,
       borderColor: '#10b981',
-      backgroundColor: 'rgba(16, 185, 129, 0.08)',
+      backgroundColor: gradient,
       borderWidth: 2,
-      pointRadius: 3,
+      pointRadius: 0,
       pointHoverRadius: 5,
       fill: true,
-      tension: 0.3,
+      tension: 0.1,
     }
   ];
 
@@ -210,7 +215,7 @@
     });
   }
 
-  new Chart(document.getElementById('priceChart'), {
+  new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
     options: {
