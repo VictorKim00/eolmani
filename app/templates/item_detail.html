@@ -184,10 +184,6 @@
 {% block scripts %}
 {% if history.points|length > 0 %}
 <script>
-  const labels = {{ chart_labels | tojson }};
-  const prices = {{ chart_prices | tojson }};
-  const avgYear = {{ history.avg_year_price | tojson }};
-
   const allLabels = {{ chart_labels | tojson }};
   const allPrices = {{ chart_prices | tojson }};
   const avgYear   = {{ history.avg_year_price | tojson }};
