@@ -15,7 +15,8 @@ from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
-from app.services.regions import REGION_LABEL, REGIONS, normalize_region
+from app.services.item_origins import get_item_origin
+from app.services.regions import REGION_COORDS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
 from app.services.season_service import get_this_month_season
 from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_signal, get_action
 from app.services.weather_client import WEEKDAY_KO, fetch_forecast
@@ -165,7 +166,8 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
     days_since_sunday = (today_date.weekday() + 1) % 7  # 일=0, 월=1, ..., 토=6
     week_start = today_date - timedelta(days=days_since_sunday)
 
-    forecast_full = await fetch_forecast(days=7, past_days=days_since_sunday)
+    region_lat, region_lon = REGION_COORDS[region_code]
+    forecast_full = await fetch_forecast(region_lat, region_lon, days=7, past_days=days_since_sunday)
     forecast_future = [d for d in forecast_full if d["date"] >= today_date.strftime("%Y-%m-%d")]
     impacts = get_impacts(forecast_future)
     week_summary = get_week_summary(forecast_future)
@@ -232,6 +234,7 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "regions": REGIONS,
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
+            "weather_location_label": REGION_WEATHER_LABEL[region_code],
         },
     )
 
@@ -263,6 +266,19 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             .order_by(ItemModel.sort_order)
         ).scalars().all()
 
+    # 산지 날씨 — 그룹 품목은 group_code의 첫 번째 항목 기준으로 산지 조회
+    origin_code = (
+        siblings[0].code if siblings else item_code
+    )
+    origin = get_item_origin(origin_code)
+    origin_forecast: list[dict] = []
+    origin_label = ""
+    origin_impacts: dict = {}
+    if origin:
+        origin_label, o_lat, o_lon = origin
+        origin_forecast = await fetch_forecast(o_lat, o_lon, days=5)
+        origin_impacts = get_impacts(origin_forecast)
+
     return templates.TemplateResponse(
         request,
         "item_detail.html",
@@ -286,6 +302,9 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             "regions": REGIONS,
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
+            "origin_forecast": origin_forecast,
+            "origin_label": origin_label,
+            "origin_impacts": origin_impacts,
         },
     )
 

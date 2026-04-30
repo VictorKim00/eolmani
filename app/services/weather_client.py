@@ -1,6 +1,6 @@
 """
 Open-Meteo 날씨 클라이언트 (API 키 불필요).
-서울 기준 7일 예보를 조회하고 1시간 인메모리 캐시로 API 호출을 최소화한다.
+좌표 기반 7일 예보를 조회하고 1시간 인메모리 캐시로 API 호출을 최소화한다.
 """
 
 import logging
@@ -10,8 +10,6 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-_SEOUL_LAT = 37.5665
-_SEOUL_LON = 126.9780
 _URL = "https://api.open-meteo.com/v1/forecast"
 
 # WMO 날씨 코드 → (이모지, 한국어 라벨)
@@ -41,30 +39,36 @@ WEATHER_CODE_MAP: dict[int, tuple[str, str]] = {
 
 WEEKDAY_KO = ["월", "화", "수", "목", "금", "토", "일"]
 
-_cache: list[dict] = []
-_cache_until: datetime = datetime.min
-_cache_past_days: int = -1
+# (lat, lon, past_days) → (data, expiry)
+_cache: dict[tuple, tuple[list[dict], datetime]] = {}
 
 
-async def fetch_forecast(days: int = 7, past_days: int = 0) -> list[dict]:
+async def fetch_forecast(
+    lat: float,
+    lon: float,
+    days: int = 7,
+    past_days: int = 0,
+) -> list[dict]:
     """
-    서울 날씨 반환 (past_days 이전 + days 이후). 각 항목:
+    지정 좌표의 날씨 반환 (past_days 이전 + days 이후). 각 항목:
       date, weekday, temp_max, temp_min, precip_prob, weather_code, emoji, label
     실패 시 이전 캐시 반환 (없으면 빈 리스트).
     """
-    global _cache, _cache_until, _cache_past_days
-
+    cache_key = (round(lat, 2), round(lon, 2), past_days)
     now = datetime.now()
-    if now < _cache_until and _cache and _cache_past_days == past_days:
-        return _cache
+
+    if cache_key in _cache:
+        cached_data, cached_until = _cache[cache_key]
+        if now < cached_until:
+            return cached_data
 
     try:
         async with httpx.AsyncClient(timeout=8.0) as client:
             resp = await client.get(
                 _URL,
                 params={
-                    "latitude": _SEOUL_LAT,
-                    "longitude": _SEOUL_LON,
+                    "latitude": lat,
+                    "longitude": lon,
                     "daily": ",".join([
                         "temperature_2m_max",
                         "temperature_2m_min",
@@ -95,12 +99,12 @@ async def fetch_forecast(days: int = 7, past_days: int = 0) -> list[dict]:
                 "label": label,
             })
 
-        _cache = result
-        _cache_until = now + timedelta(hours=1)
-        _cache_past_days = past_days
-        logger.info(f"[Open-Meteo] past={past_days}+{days}일 수신 완료")
+        _cache[cache_key] = (result, now + timedelta(hours=1))
+        logger.info(f"[Open-Meteo] ({lat},{lon}) past={past_days}+{days}일 수신 완료")
         return result
 
     except Exception as e:
         logger.warning(f"[Open-Meteo] 날씨 조회 실패: {e}")
-        return _cache  # 이전 캐시 반환
+        if cache_key in _cache:
+            return _cache[cache_key][0]
+        return []
