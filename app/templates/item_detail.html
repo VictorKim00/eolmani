@@ -137,12 +137,16 @@
 
 <!-- 가격 추이 차트 -->
 {% if history.points|length > 0 %}
-{% set span_days = (history.points[-1].date - history.points[0].date).days %}
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
-  <h2 class="text-sm font-semibold text-gray-500 mb-3">
-    최근 {{ span_days if span_days > 30 else 30 }}일 가격 추이
-  </h2>
-  <div class="relative" style="height: 220px;">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-sm font-semibold text-gray-500" id="chartTitle">가격 추이</h2>
+    <div class="flex gap-1">
+      <button onclick="setPeriod(1)"  id="btn1m"  class="period-btn text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">1개월</button>
+      <button onclick="setPeriod(3)"  id="btn3m"  class="period-btn text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">3개월</button>
+      <button onclick="setPeriod(0)"  id="btnAll" class="period-btn text-xs px-2.5 py-1 rounded-lg border border-emerald-400 text-emerald-600 transition-colors">전체</button>
+    </div>
+  </div>
+  <div class="relative" style="height: 260px;">
     <canvas id="priceChart"></canvas>
   </div>
   <p class="text-xs text-gray-300 mt-2 text-right">KAMIS 도소매 조사 평균 · {{ current_region_label }} 기준</p>
@@ -184,40 +188,67 @@
   const prices = {{ chart_prices | tojson }};
   const avgYear = {{ history.avg_year_price | tojson }};
 
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-  gradient.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
-  gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+  const allLabels = {{ chart_labels | tojson }};
+  const allPrices = {{ chart_prices | tojson }};
+  const avgYear   = {{ history.avg_year_price | tojson }};
 
-  const datasets = [
-    {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+
+  function makeGradient() {
+    const g = ctx.createLinearGradient(0, 0, 0, 260);
+    g.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
+    g.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+    return g;
+  }
+
+  function sliceData(months) {
+    if (!months) return { labels: allLabels, prices: allPrices };
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - months);
+    const cutStr = cutoff.toISOString().slice(0, 10);
+    const idx = allLabels.findIndex(l => l >= cutStr);
+    return idx === -1
+      ? { labels: allLabels, prices: allPrices }
+      : { labels: allLabels.slice(idx), prices: allPrices.slice(idx) };
+  }
+
+  function yRange(prices) {
+    const allVals = avgYear ? [...prices, avgYear] : prices;
+    const mn = Math.min(...allVals), mx = Math.max(...allVals);
+    const pad = (mx - mn) * 0.25 || mx * 0.05;
+    return { min: Math.floor(mn - pad), max: Math.ceil(mx + pad) };
+  }
+
+  function buildDatasets(prices) {
+    const ds = [{
       label: '가격',
       data: prices,
       borderColor: '#10b981',
-      backgroundColor: gradient,
+      backgroundColor: makeGradient(),
       borderWidth: 2,
       pointRadius: 0,
       pointHoverRadius: 5,
       fill: true,
       tension: 0.1,
-    }
-  ];
-
-  if (avgYear) {
-    datasets.push({
+    }];
+    if (avgYear) ds.push({
       label: '평년',
-      data: Array(labels.length).fill(avgYear),
+      data: Array(prices.length).fill(avgYear),
       borderColor: '#d1d5db',
       borderWidth: 1.5,
       borderDash: [5, 4],
       pointRadius: 0,
       fill: false,
     });
+    return ds;
   }
 
-  new Chart(ctx, {
+  const { labels: initLabels, prices: initPrices } = sliceData(0);
+  const { min: initMin, max: initMax } = yRange(initPrices);
+
+  const chart = new Chart(ctx, {
     type: 'line',
-    data: { labels, datasets },
+    data: { labels: initLabels, datasets: buildDatasets(initPrices) },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -230,21 +261,18 @@
         },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('ko-KR')}원`
+            label: c => `${c.dataset.label}: ${c.parsed.y.toLocaleString('ko-KR')}원`
           }
         }
       },
       scales: {
         x: {
-          ticks: {
-            maxTicksLimit: 6,
-            font: { size: 11 },
-            color: '#9ca3af',
-            maxRotation: 0,
-          },
+          ticks: { maxTicksLimit: 8, font: { size: 11 }, color: '#9ca3af', maxRotation: 0 },
           grid: { display: false }
         },
         y: {
+          min: initMin,
+          max: initMax,
           ticks: {
             font: { size: 11 },
             color: '#9ca3af',
@@ -255,6 +283,33 @@
       }
     }
   });
+
+  let activePeriod = 0;
+
+  function setPeriod(months) {
+    activePeriod = months;
+    const { labels, prices } = sliceData(months);
+    const { min, max } = yRange(prices);
+    chart.data.labels = labels;
+    chart.data.datasets = buildDatasets(prices);
+    chart.options.scales.y.min = min;
+    chart.options.scales.y.max = max;
+    chart.update();
+
+    const titles = { 0: '가격 추이 — 전체', 1: '가격 추이 — 최근 1개월', 3: '가격 추이 — 최근 3개월' };
+    document.getElementById('chartTitle').textContent = titles[months] ?? '가격 추이';
+
+    document.querySelectorAll('.period-btn').forEach(b => {
+      b.classList.remove('border-emerald-400', 'text-emerald-600');
+      b.classList.add('border-gray-200', 'text-gray-400');
+    });
+    const active = { 0: 'btnAll', 1: 'btn1m', 3: 'btn3m' }[months];
+    if (active) {
+      const el = document.getElementById(active);
+      el.classList.add('border-emerald-400', 'text-emerald-600');
+      el.classList.remove('border-gray-200', 'text-gray-400');
+    }
+  }
 </script>
 {% endif %}
 {% endblock %}

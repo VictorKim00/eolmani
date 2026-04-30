@@ -242,7 +242,7 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
 @app.get("/items/{item_code}")
 async def item_detail(item_code: str, request: Request, region: str = "", db: Session = Depends(get_db)):
     region_code = normalize_region(region)
-    history = get_item_history(db, item_code, region_code=region_code)
+    history = get_item_history(db, item_code, days=180, region_code=region_code)
     if history is None:
         raise HTTPException(status_code=404, detail="품목을 찾을 수 없습니다")
 
