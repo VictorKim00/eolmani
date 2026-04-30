@@ -113,8 +113,9 @@ async def collect_prices() -> None:
 
 def start_scheduler() -> None:
     scheduler.add_job(collect_prices, CronTrigger(hour=6, minute=0))
+    scheduler.add_job(collect_prices, CronTrigger(hour=15, minute=0))
     scheduler.start()
-    logger.info("스케줄러 시작 — 매일 06:00 가격 수집")
+    logger.info("스케줄러 시작 — 매일 06:00 / 15:00 가격 수집")
 
 
 def stop_scheduler() -> None:

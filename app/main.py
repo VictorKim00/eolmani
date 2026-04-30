@@ -12,7 +12,7 @@ from app.api.prices import router as prices_router
 from app.config import settings
 from app.database import get_db
 from app.models.item import Item as ItemModel
-from app.scheduler.price_collector import start_scheduler, stop_scheduler
+from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
 from app.services.price_service import get_item_history, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.season_service import get_this_month_season
@@ -85,9 +85,31 @@ def _build_category_cards(items_in_cat: list) -> list:
     return cards
 
 
+def _last_collected_date() -> date | None:
+    """DB에서 가장 최근 수집일 반환."""
+    from app.database import SessionLocal as _DB
+    from app.models.price_history import PriceHistory as _PH
+    db = _DB()
+    try:
+        return db.execute(
+            select(_PH.recorded_date)
+            .where(_PH.source == "kamis")
+            .order_by(_PH.recorded_date.desc())
+            .limit(1)
+        ).scalar_one_or_none()
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
+
+    # 배포·재시작으로 06:00 / 15:00 job을 놓쳤을 때 즉시 수집
+    import asyncio
+    if _last_collected_date() != date.today():
+        asyncio.create_task(collect_prices())
+
     yield
     stop_scheduler()
 
