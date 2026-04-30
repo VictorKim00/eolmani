@@ -59,9 +59,10 @@
 
 <!-- 주간 날씨 -->
 {% if week_days %}
-<section class="mb-8">
+{% set is_nationwide = (current_region_code == "") %}
+<section class="mb-8 {% if is_nationwide %}opacity-50{% endif %}">
   <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🌤️ 이번 주 날씨 · 가격 영향</h2>
-  {% if week_summary %}
+  {% if week_summary and not is_nationwide %}
   <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3">
     {% for summary in week_summary %}
     <p class="text-xs text-blue-700 {% if not loop.first %}mt-1{% endif %}">⚠️ {{ summary }}</p>
@@ -74,7 +75,7 @@
     <div class="flex-1 min-w-0 bg-white rounded-xl border shadow-sm px-1 py-3 text-center
       {% if day.is_today %}border-emerald-300 ring-1 ring-emerald-100
       {% elif day.is_past %}border-gray-100 opacity-40
-      {% elif day_impacts %}border-orange-200
+      {% elif day_impacts and not is_nationwide %}border-orange-200
       {% else %}border-gray-100{% endif %}">
       <p class="text-xs mb-1 truncate {% if day.is_today %}text-emerald-600 font-bold{% else %}text-gray-400{% endif %}">
         {% if day.is_today %}오늘{% else %}{{ day.weekday }}{% endif %}
@@ -86,7 +87,7 @@
       {% if not day.is_past and day.precip_prob > 0 %}
       <p class="text-xs text-gray-300 mt-1">💧{{ day.precip_prob }}%</p>
       {% endif %}
-      {% if not day.is_past and day_impacts %}
+      {% if not day.is_past and day_impacts and not is_nationwide %}
       <p class="text-xs mt-1">{% for impact in day_impacts %}{{ impact.emoji }}{% endfor %}</p>
       {% endif %}
       {% else %}
@@ -95,7 +96,11 @@
     </div>
     {% endfor %}
   </div>
+  {% if is_nationwide %}
+  <p class="text-xs text-gray-400 mt-2 text-center">지역을 선택하면 해당 지역 날씨를 볼 수 있어요</p>
+  {% else %}
   <p class="text-xs text-gray-300 mt-2 text-right">Open-Meteo · {{ weather_location_label }} 기준</p>
+  {% endif %}
 </section>
 {% endif %}
 
