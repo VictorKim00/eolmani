@@ -31,7 +31,7 @@ SEASON_CALENDAR: dict[int, list[dict]] = {
     5: [
         {"emoji": "🍉", "name": "수박", "reason": "초여름 출하 시작 — 6~7월이 연중 최저가", "item_code": "watermelon"},
         {"emoji": "🍈", "name": "참외", "reason": "제철 출하 시작 — 5~6월이 가장 달고 저렴", "item_code": "korean_melon"},
-        {"emoji": "🧄", "name": "마늘", "reason": "햇마늘 출하 시작", "item_code": "garlic"},
+        {"emoji": "🥬", "name": "배추(봄)", "reason": "봄배추 출하 시작 — 월동배추보다 저렴", "item_code": "cabbage_spring"},
     ],
     6: [
         {"emoji": "🍉", "name": "수박", "reason": "여름 수박 절정 — 지금이 연중 최저가", "item_code": "watermelon"},
@@ -55,11 +55,11 @@ SEASON_CALENDAR: dict[int, list[dict]] = {
     ],
     10: [
         {"emoji": "🍎", "name": "사과", "reason": "추석 이후 가격 안정기", "item_code": "apple"},
-        {"emoji": "🥬", "name": "배추", "reason": "김장 준비 — 10월 말이 가격 저점", "item_code": "cabbage"},
+        {"emoji": "🥬", "name": "배추(월동)", "reason": "김장 준비 — 10월 말이 가격 저점", "item_code": "cabbage"},
         {"emoji": "🧄", "name": "마늘", "reason": "김장용 양념 채소 — 미리 확보", "item_code": "garlic"},
     ],
     11: [
-        {"emoji": "🥬", "name": "배추", "reason": "⭐ 김장 시즌 — 11월 초·중순 집중 확인", "item_code": "cabbage"},
+        {"emoji": "🥬", "name": "배추(월동)", "reason": "⭐ 김장 시즌 — 11월 초·중순 집중 확인", "item_code": "cabbage"},
         {"emoji": "🧅", "name": "양파", "reason": "김장 양념용", "item_code": "onion"},
         {"emoji": "🐟", "name": "갈치", "reason": "겨울 제철 시작", "item_code": "hairtail"},
     ],

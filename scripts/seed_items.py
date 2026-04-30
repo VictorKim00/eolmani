@@ -29,8 +29,10 @@ ITEMS = [
     {"code": "enoki_mushroom",   "name": "팽이버섯",   "category": "채소", "unit": "150g", "kamis_category_code": "300", "kamis_item_code": "316",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "king_mushroom",    "name": "새송이버섯", "category": "채소", "unit": "100g", "kamis_category_code": "300", "kamis_item_code": "317",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     # ── 채소 (category 200) ─────────────────────────────────────────
-    {"code": "cabbage",     "name": "배추",            "category": "채소", "unit": "1포기", "kamis_category_code": "200", "kamis_item_code": "211",  "kamis_kind_code": "06", "kamis_rank": "상품"},
-    {"code": "radish",      "name": "무",              "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "231",  "kamis_kind_code": "06", "kamis_rank": "상품"},
+    {"code": "cabbage",        "name": "배추(월동)", "category": "채소", "unit": "1포기", "kamis_category_code": "200", "kamis_item_code": "211", "kamis_kind_code": "06", "kamis_rank": "상품", "group_code": "cabbage", "variant_label": "월동배추", "sort_order": 1},
+    {"code": "cabbage_spring", "name": "배추(봄)",  "category": "채소", "unit": "1포기", "kamis_category_code": "200", "kamis_item_code": "211", "kamis_kind_code": "01", "kamis_rank": "상품", "group_code": "cabbage", "variant_label": "봄배추",  "sort_order": 2},  # 비시즌(10~5월) 데이터 없음
+    {"code": "radish",         "name": "무(월동)",  "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "231", "kamis_kind_code": "06", "kamis_rank": "상품", "group_code": "radish",   "variant_label": "월동무",   "sort_order": 1},
+    {"code": "radish_spring",  "name": "무(봄)",    "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "231", "kamis_kind_code": "01", "kamis_rank": "상품", "group_code": "radish",   "variant_label": "봄무",     "sort_order": 2},  # 비시즌(10~5월) 데이터 없음
     {"code": "onion",       "name": "양파",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "245",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "green_onion", "name": "대파",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "246",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "garlic",      "name": "마늘",            "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "258",  "kamis_kind_code": "01", "kamis_rank": "상품"},
