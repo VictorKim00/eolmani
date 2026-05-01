@@ -21,6 +21,8 @@ from app.services.signal_service import SIGNAL_EMOJI, SIGNAL_LABEL, compute_sign
 from app.services.weather_client import WEEKDAY_KO, fetch_forecast
 from app.services.weather_impact_service import get_impacts, get_week_summary
 
+_SIG_ORDER: dict[str, int] = {"green": 0, "yellow": 1, "red": 2}
+
 CATEGORY_EMOJI: dict[str, str] = {
     "곡물": "🌾",
     "채소": "🥬",
@@ -130,9 +132,15 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
     region_code = normalize_region(region)
     data = get_today_prices(db, region_code=region_code)
 
-    # 카테고리별 그룹핑 → 그룹 카드 목록으로 변환
+    # 신호등 계산 (정렬에 먼저 사용)
+    signals = {
+        i.code: compute_signal(i.change_avg, i.change_30d, i.change_7d)
+        for i in data.items
+    }
+
+    # 카테고리별 그룹핑 — 카테고리 내부는 🟢→🟡→🔴 신호 우선 정렬
     raw_categories: dict[str, list] = defaultdict(list)
-    for item in data.items:
+    for item in sorted(data.items, key=lambda i: _SIG_ORDER.get(signals.get(i.code, "yellow"), 1)):
         raw_categories[item.category].append(item)
 
     category_cards: dict[str, list] = {
@@ -150,12 +158,6 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
         [i for i in all_for_deals if i.change_7d is not None and i.change_7d < 0],
         key=lambda i: i.change_7d,
     )[:5]
-
-    # 신호등 계산 (전체 개별 품목 기준)
-    signals = {
-        i.code: compute_signal(i.change_avg, i.change_30d, i.change_7d)
-        for i in data.items
-    }
 
     # 신호등 분포 (요약 배너용)
     green_count = sum(1 for s in signals.values() if s == "green")

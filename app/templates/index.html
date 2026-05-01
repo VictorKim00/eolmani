@@ -146,10 +146,10 @@
     <a href="/items/{{ item.code }}" class="bg-white rounded-xl border border-blue-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-blue-200 transition-all">
       <div class="min-w-0">
         <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
-        <p class="text-xs text-gray-400 mt-0.5">{{ item.unit }}</p>
+        <p class="text-xs text-gray-500 mt-0.5"><span class="bg-gray-100 text-gray-400 text-[10px] px-1 py-0.5 rounded">시장 평균</span></p>
       </div>
       <div class="text-right shrink-0 ml-3">
-        <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원</p>
+        <p class="text-xl font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원 <span class="text-sm font-normal text-gray-400">/ {{ item.unit }}</span></p>
         {% if div_info %}
         <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
         {% endif %}
@@ -222,10 +222,10 @@
             <p class="font-semibold text-gray-800 truncate">{{ card.group_name }}</p>
             {{ signal_pill(def_sig) }}
           </div>
-          <p class="text-xs text-gray-400 mt-1">{{ def.unit }} · {{ current_region_label }}</p>
+          <p class="text-xs text-gray-500 mt-1">{{ current_region_label }} · <span class="bg-gray-100 text-gray-400 text-[10px] px-1 py-0.5 rounded">시장 평균</span></p>
         </div>
         <div class="text-right shrink-0 ml-3">
-          <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(def.price) }}원</p>
+          <p class="text-xl font-bold text-gray-900">{{ "{:,.0f}".format(def.price) }}원 <span class="text-sm font-normal text-gray-400">/ {{ def.unit }}</span></p>
           {% if div_info %}
           <p class="text-xs text-gray-400">{{ "{:,.0f}".format((def.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
           {% endif %}
@@ -269,10 +269,10 @@
           <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
           {{ signal_pill(sig) }}
         </div>
-        <p class="text-xs text-gray-400 mt-1">{{ item.unit }} · {{ current_region_label }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ current_region_label }} · <span class="bg-gray-100 text-gray-400 text-[10px] px-1 py-0.5 rounded">시장 평균</span></p>
       </div>
       <div class="text-right shrink-0 ml-3">
-        <p class="text-lg font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원</p>
+        <p class="text-xl font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원 <span class="text-sm font-normal text-gray-400">/ {{ item.unit }}</span></p>
         {% if div_info %}
         <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
         {% endif %}
