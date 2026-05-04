@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # uv 설치
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.7 /uv /usr/local/bin/uv
 
 # 의존성 먼저 복사 (레이어 캐시 활용)
 COPY pyproject.toml uv.lock ./
