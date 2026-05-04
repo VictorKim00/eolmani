@@ -124,7 +124,10 @@ app = FastAPI(title="얼마니", version="0.1.0", lifespan=lifespan)
 app.include_router(prices_router)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+from urllib.parse import quote_plus
+
 templates = Jinja2Templates(directory="app/templates")
+templates.env.filters["urlencode_str"] = quote_plus
 
 
 @app.get("/")
