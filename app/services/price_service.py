@@ -163,4 +163,5 @@ def get_item_history(db: Session, item_code: str, days: int = 30, region_code: s
         change_30d=change_30d,
         change_avg=change_avg,
         points=points,
+        coupang_url=item.coupang_url,
     )

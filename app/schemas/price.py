@@ -45,3 +45,4 @@ class PriceHistoryResponse(BaseModel):
     change_30d: float | None
     change_avg: float | None
     points: list[PriceHistoryPoint]
+    coupang_url: str | None = None
