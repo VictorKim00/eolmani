@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ history.item_name }} — 얼마니{% endblock %}
+{% block title %}{{ history.item_name }} 가격 얼마니? — 오늘 {{ history.item_name }} 시세{% endblock %}
+{% block meta_description %}오늘 {{ history.item_name }} 가격은 {{ "{:,.0f}".format(history.current_price) }}원 ({{ history.unit }}). 평년 대비 {% if history.change_avg is not none %}{{ "%+.1f"|format(history.change_avg) }}%{% else %}데이터 수집 중{% endif %}. KAMIS 공공데이터 기반 식료품 가격 추적 서비스 얼마니.{% endblock %}
+{% block canonical_path %}/items/{{ history.item_code }}{% endblock %}
+{% block og_title %}{{ history.item_name }} 오늘 가격 — 얼마니{% endblock %}
+{% block og_description %}오늘 {{ history.item_name }} {{ "{:,.0f}".format(history.current_price) }}원 ({{ history.unit }}). 지금 살 때인지 신호등으로 확인하세요.{% endblock %}
+{% block og_path %}/items/{{ history.item_code }}{% endblock %}
+{% block twitter_title %}{{ history.item_name }} 오늘 가격 — 얼마니{% endblock %}
+{% block twitter_description %}{{ history.item_name }} {{ "{:,.0f}".format(history.current_price) }}원 ({{ history.unit }}) · {{ signal_label[signal] }}{% endblock %}
 
 {% block content %}
 

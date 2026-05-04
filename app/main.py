@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, text
@@ -253,6 +254,7 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
             "weather_location_label": REGION_WEATHER_LABEL[region_code],
+            "ga_id": settings.google_analytics_id,
         },
     )
 
@@ -321,8 +323,28 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             "region_groups": REGION_GROUPS,
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
+            "ga_id": settings.google_analytics_id,
         },
     )
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots_txt():
+    return "User-agent: *\nAllow: /\nSitemap: https://www.eolmani.com/sitemap.xml\n"
+
+
+@app.get("/sitemap.xml", response_class=PlainTextResponse)
+def sitemap_xml(db: Session = Depends(get_db)):
+    items = db.execute(select(ItemModel.code)).scalars().all()
+    base = "https://www.eolmani.com"
+    urls = [f"<url><loc>{base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>"]
+    for code in items:
+        urls.append(f"<url><loc>{base}/items/{code}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>")
+    body = "\n".join(urls)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{body}
+</urlset>"""
 
 
 @app.get("/health")

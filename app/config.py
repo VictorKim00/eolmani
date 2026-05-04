@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     kamis_cert_key: str = ""
     kamis_base_url: str = "http://www.kamis.or.kr/service/price/xml.do"
     admin_secret: str = ""  # /admin/collect 보호용. 비어있으면 인증 생략.
+    google_analytics_id: str = ""  # GA4 측정 ID (G-XXXXXXXXXX). 비어있으면 GA 비활성화.
 
     @property
     def sqlalchemy_database_url(self) -> str:

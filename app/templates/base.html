@@ -3,7 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}얼마니{% endblock %}</title>
+  <title>{% block title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}KAMIS 공공데이터 기반 농수산물·식료품 가격 추적 서비스. 지금 살 때인지 신호등으로 알려드려요. 사과·배추·돼지고기·계란 등 64종 실시간 시세.{% endblock %}" />
+  <meta name="keywords" content="식료품 가격, 농산물 시세, 오늘 사과 가격, 배추 가격, 돼지고기 가격, 계란 가격, KAMIS, 얼마니" />
+  <link rel="canonical" href="https://www.eolmani.com{% block canonical_path %}/{% endblock %}" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="얼마니" />
+  <meta property="og:title" content="{% block og_title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}지금 살 때인지 신호등으로 알려드려요. KAMIS 기반 64종 식료품 가격 추적.{% endblock %}" />
+  <meta property="og:url" content="https://www.eolmani.com{% block og_path %}/{% endblock %}" />
+  <meta property="og:image" content="https://www.eolmani.com/static/og-image.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{% block twitter_title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}" />
+  <meta name="twitter:description" content="{% block twitter_description %}지금 살 때인지 신호등으로 알려드려요.{% endblock %}" />
+
+  {% if ga_id %}
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ ga_id }}');
+  </script>
+  {% endif %}
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
