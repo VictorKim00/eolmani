@@ -217,6 +217,12 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
 
     category_counts = {cat: len(cards) for cat, cards in category_cards.items()}
 
+    # 히어로 카드: 🟢 품목 중 평년 대비 가장 저렴한 순 최대 3개
+    hero_items = sorted(
+        [i for i in data.items if signals.get(i.code) == "green" and i.price > 0 and i.change_avg is not None],
+        key=lambda i: i.change_avg,
+    )[:3]
+
     # 데이터 기준일 라벨
     last_data_date = max((i.recorded_date for i in data.items), default=None)
     if last_data_date is None or last_data_date == today_date:
@@ -249,6 +255,7 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "week_days": week_days,
             "impacts": impacts,
             "week_summary": week_summary,
+            "hero_items": hero_items,
             "regions": REGIONS,
             "region_groups": REGION_GROUPS,
             "current_region_code": region_code,
