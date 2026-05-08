@@ -126,15 +126,18 @@ app.include_router(prices_router)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
+_NON_CANONICAL_HOSTS = {"railway.app", "eolmani.com"}  # www 없는 루트 도메인 + railway 서브도메인
+
+
 @app.middleware("http")
 async def redirect_to_canonical(request: Request, call_next):
-    """railway.app 서브도메인으로 들어오는 요청을 www.eolmani.com으로 301 리다이렉트.
-    중복 URL 인덱싱을 방지해 검색엔진 순위 분산을 막는다."""
-    host = request.headers.get("host", "")
-    if "railway.app" in host:
-        url = request.url
-        canonical = str(url).replace(f"{url.scheme}://{host}", "https://www.eolmani.com")
-        return RedirectResponse(url=canonical, status_code=301)
+    """비정규 호스트(railway.app, eolmani.com)를 https://www.eolmani.com으로 301 리다이렉트.
+    Google이 http://eolmani.com/ 을 canonical로 선택하는 문제를 방지한다."""
+    host = request.headers.get("host", "").split(":")[0]  # 포트 제거
+    if any(h in host for h in _NON_CANONICAL_HOSTS) and host != "www.eolmani.com":
+        path = request.url.path
+        qs = f"?{request.url.query}" if request.url.query else ""
+        return RedirectResponse(url=f"https://www.eolmani.com{path}{qs}", status_code=301)
     return await call_next(request)
 
 from urllib.parse import quote_plus
