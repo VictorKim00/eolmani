@@ -59,7 +59,7 @@ ITEMS = [
     {"code": "paprika",         "name": "파프리카",       "category": "채소", "unit": "200g",  "kamis_category_code": "200", "kamis_item_code": "256",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "mini_cabbage",    "name": "알배기배추",     "category": "채소", "unit": "1포기", "kamis_category_code": "200", "kamis_item_code": "279",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "broccoli",        "name": "브로콜리",       "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "280",  "kamis_kind_code": "00", "kamis_rank": "상품"},
-    {"code": "cherry_tomato",   "name": "방울토마토",     "category": "채소", "unit": "1kg",   "kamis_category_code": "400", "kamis_item_code": "422",  "kamis_kind_code": "01", "kamis_rank": "상품"},
+    {"code": "cherry_tomato",   "name": "방울토마토",     "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "422",  "kamis_kind_code": "01", "kamis_rank": "상품"},
     # ── 과일 (category 400 + KAMIS 200 일부) ────────────────────────
     {"code": "apple",           "name": "사과",           "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "411",  "kamis_kind_code": "05", "kamis_rank": "상품"},
     {"code": "pear",            "name": "배",             "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "412",  "kamis_kind_code": "01", "kamis_rank": "상품"},
