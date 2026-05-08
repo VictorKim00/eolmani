@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, text
@@ -124,6 +124,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="얼마니", version="0.1.0", lifespan=lifespan)
 app.include_router(prices_router)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.middleware("http")
+async def redirect_to_canonical(request: Request, call_next):
+    """railway.app 서브도메인으로 들어오는 요청을 www.eolmani.com으로 301 리다이렉트.
+    중복 URL 인덱싱을 방지해 검색엔진 순위 분산을 막는다."""
+    host = request.headers.get("host", "")
+    if "railway.app" in host:
+        url = request.url
+        canonical = str(url).replace(f"{url.scheme}://{host}", "https://www.eolmani.com")
+        return RedirectResponse(url=canonical, status_code=301)
+    return await call_next(request)
 
 from urllib.parse import quote_plus
 
@@ -262,6 +274,8 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "current_region_label": REGION_LABEL[region_code],
             "weather_location_label": REGION_WEATHER_LABEL[region_code],
             "ga_id": settings.google_analytics_id,
+            "google_site_verification": settings.google_site_verification,
+            "naver_site_verification": settings.naver_site_verification,
         },
     )
 
@@ -331,6 +345,8 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             "current_region_code": region_code,
             "current_region_label": REGION_LABEL[region_code],
             "ga_id": settings.google_analytics_id,
+            "google_site_verification": settings.google_site_verification,
+            "naver_site_verification": settings.naver_site_verification,
         },
     )
 
