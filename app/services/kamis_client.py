@@ -72,6 +72,7 @@ async def fetch_category(
         timeout=15.0,
         follow_redirects=True,
         verify=_ssl_context(),
+        headers={"Accept": "*/*"},
     ) as client:
         resp = await client.get(settings.kamis_base_url, params=params)
         resp.raise_for_status()
