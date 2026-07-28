@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     database_url: str
     kamis_cert_id: str = ""
     kamis_cert_key: str = ""
-    kamis_base_url: str = "http://www.kamis.or.kr/service/price/xml.do"
+    kamis_base_url: str = "https://www.kamis.or.kr/service/price/xml.do"
     admin_secret: str = ""  # /admin/collect 보호용. 비어있으면 인증 생략.
     google_analytics_id: str = ""  # GA4 측정 ID (G-XXXXXXXXXX). 비어있으면 GA 비활성화.
     google_site_verification: str = ""  # Google Search Console HTML 태그 인증 코드

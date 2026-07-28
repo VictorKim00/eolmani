@@ -72,10 +72,16 @@ async def fetch_category(
         timeout=15.0,
         follow_redirects=True,
         verify=_ssl_context(),
-        headers={"Accept": "*/*"},
+        headers={
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate",
+            "User-Agent": "Mozilla/5.0 (compatible; eolmani/1.0)",
+        },
     ) as client:
         resp = await client.get(settings.kamis_base_url, params=params)
-        resp.raise_for_status()
+        if not resp.is_success:
+            logger.warning(f"[KAMIS] HTTP {resp.status_code} — body: {resp.text[:200]}")
+            resp.raise_for_status()
         data = resp.json()
 
     items: list[dict] = data.get("data", {}).get("item", [])
