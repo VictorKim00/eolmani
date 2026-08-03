@@ -389,6 +389,21 @@ async def admin_collect(request: Request):
     return {"status": "ok", "message": "수집 완료"}
 
 
+@app.post("/admin/backfill")
+async def admin_backfill(request: Request):
+    """누락 날짜 백필 트리거. Body: {"date_from": "YYYY-MM-DD", "date_to": "YYYY-MM-DD"}"""
+    if settings.admin_secret:
+        if request.headers.get("X-Admin-Key", "") != settings.admin_secret:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+    body = await request.json()
+    from datetime import date as _date
+    from app.scheduler.price_collector import backfill_prices
+    date_from = _date.fromisoformat(body["date_from"])
+    date_to = _date.fromisoformat(body["date_to"])
+    await backfill_prices(date_from, date_to)
+    return {"status": "ok", "message": f"백필 완료: {date_from} ~ {date_to}"}
+
+
 @app.get("/health/db")
 def health_db(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
