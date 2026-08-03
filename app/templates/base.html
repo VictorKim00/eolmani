@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}KAMIS 공공데이터 기반 농수산물·식료품 가격 추적 서비스. 지금 살 때인지 신호등으로 알려드려요. 사과·배추·돼지고기·계란 등 64종 실시간 시세.{% endblock %}" />
-  <meta name="keywords" content="식료품 가격, 농산물 시세, 오늘 사과 가격, 배추 가격, 돼지고기 가격, 계란 가격, KAMIS, 얼마니" />
+  <meta name="description" content="{% block meta_description %}공공데이터포털 기반 농수산물·식료품 가격 추적 서비스. 지금 살 때인지 신호등으로 알려드려요. 사과·배추·돼지고기·계란 등 64종 실시간 시세.{% endblock %}" />
+  <meta name="keywords" content="식료품 가격, 농산물 시세, 오늘 사과 가격, 배추 가격, 돼지고기 가격, 계란 가격, 얼마니" />
   <link rel="canonical" href="https://www.eolmani.com{% block canonical_path %}/{% endblock %}" />
 
   <!-- 검색엔진 인증 -->
@@ -16,7 +16,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="얼마니" />
   <meta property="og:title" content="{% block og_title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}" />
-  <meta property="og:description" content="{% block og_description %}지금 살 때인지 신호등으로 알려드려요. KAMIS 기반 64종 식료품 가격 추적.{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}지금 살 때인지 신호등으로 알려드려요. 64종 식료품 가격 추적.{% endblock %}" />
   <meta property="og:url" content="https://www.eolmani.com{% block og_path %}/{% endblock %}" />
   <meta property="og:image" content="https://www.eolmani.com/static/og-image.png" />
 
@@ -88,7 +88,7 @@
 
   <!-- 푸터 -->
   <footer class="max-w-3xl mx-auto px-4 py-6 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
-    <p>가격 출처: <a href="https://www.kamis.or.kr" target="_blank" class="underline">KAMIS 농산물유통정보</a> · 도소매 조사 평균 · {% if current_region_label is defined %}{{ current_region_label }}{% else %}전국 평균{% endif %} 기준</p>
+    <p>가격 출처: <a href="https://www.data.go.kr" target="_blank" class="underline">공공데이터포털 농산물 가격정보</a> · 도소매 조사 평균 · {% if current_region_label is defined %}{{ current_region_label }}{% else %}전국 평균{% endif %} 기준</p>
     <p class="mt-1">마트별 실제 가격과 다를 수 있습니다 · 얼마니는 장볼 때 타이밍을 알려주는 가격 신호등입니다.</p>
     <p class="mt-1">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
   </footer>
