@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 _RECENT_URL = "https://apis.data.go.kr/B552845/recent/price"
 _PER_DAY_URL = "https://apis.data.go.kr/B552845/perDay/price"
 
+# data.go.kr는 numOfRows를 최대 1000으로 캡한다. 그 이상은 pageNo로 순회해야 한다.
+_MAX_ROWS_PER_PAGE = 1000
+_MAX_PAGES = 50  # 안전장치 (품목·기간당 5만건이면 충분)
+
 
 def _parse_price(value: str | None) -> float | None:
     if not value:
@@ -40,6 +44,13 @@ def _extract_items(data: dict) -> list[dict]:
         return []
     item = items.get("item", [])
     return [item] if isinstance(item, dict) else (item or [])
+
+
+def _total_count(data: dict) -> int:
+    try:
+        return int(data.get("response", {}).get("body", {}).get("totalCount", 0))
+    except (TypeError, ValueError):
+        return 0
 
 
 async def fetch_recent(
@@ -86,11 +97,10 @@ async def fetch_per_day(
     if not settings.data_go_kr_key:
         return []
 
-    params: dict = {
+    base_params: dict = {
         "serviceKey": settings.data_go_kr_key,
         "returnType": "json",
-        "pageNo": "1",
-        "numOfRows": "500",
+        "numOfRows": str(_MAX_ROWS_PER_PAGE),
         "cond[exmn_ymd::GTE]": date_from,
         "cond[exmn_ymd::LTE]": date_to,
         "cond[se_cd::EQ]": "01",
@@ -98,16 +108,24 @@ async def fetch_per_day(
         "cond[item_cd::EQ]": item_code,
     }
     if region_code:
-        params["cond[sgg_cd::EQ]"] = region_code
+        base_params["cond[sgg_cd::EQ]"] = region_code
 
+    rows: list[dict] = []
     async with httpx.AsyncClient(timeout=20.0) as client:
-        resp = await client.get(_PER_DAY_URL, params=params)
-        if not resp.is_success:
-            logger.warning(f"[기간별] HTTP {resp.status_code} item={item_code}")
-            resp.raise_for_status()
-        data = resp.json()
+        for page in range(1, _MAX_PAGES + 1):
+            resp = await client.get(_PER_DAY_URL, params={**base_params, "pageNo": str(page)})
+            if not resp.is_success:
+                logger.warning(f"[기간별] HTTP {resp.status_code} item={item_code} page={page}")
+                resp.raise_for_status()
+            data = resp.json()
+            page_rows = _extract_items(data)
+            rows.extend(page_rows)
+            total = _total_count(data)
+            if len(rows) >= total or len(page_rows) < _MAX_ROWS_PER_PAGE:
+                break
+        else:
+            logger.warning(f"[기간별] item={item_code} {date_from}~{date_to} — {_MAX_PAGES}페이지 초과, 잘림")
 
-    rows = _extract_items(data)
     logger.debug(f"[기간별] item={item_code} {date_from}~{date_to} → {len(rows)}건")
     return rows
 
@@ -119,8 +137,8 @@ def find_grade_row(
 ) -> dict | None:
     """
     등급명(grd_nm) 기준으로 일치하는 row 선택.
-    kind_code 제공 시 vrty_cd+grd_nm 완전 일치를 우선하고,
-    없으면 grd_nm만 일치하는 row, 그래도 없으면 첫 번째 row를 반환.
+    kind_code 제공 시 vrty_cd+grd_nm 완전 일치를 우선하고, 없으면 grd_nm만 일치하는 row.
+    둘 다 없으면 None — 엉뚱한 품종·등급 가격을 저장하느니 결측이 낫다.
     """
     if not rows:
         return None
@@ -135,8 +153,14 @@ def find_grade_row(
     for row in rows:
         if row.get("grd_nm") == kamis_rank:
             return row
-    # 3순위: 첫 번째 row (계절 품종 변동 시 폴백)
-    return rows[0]
+    # 매칭 실패: 조용히 rows[0]을 쓰면 다른 품종 가격이 저장되므로 결측 처리 + 경고
+    grades = sorted({r.get("grd_nm") for r in rows})
+    varieties = sorted({r.get("vrty_cd") for r in rows})
+    logger.warning(
+        f"[등급 매칭 실패] rank={kamis_rank!r} kind={kind_code!r} — "
+        f"응답 등급={grades} 품종={varieties} — 이 건 건너뜀"
+    )
+    return None
 
 
 def group_by_region(rows: list[dict]) -> dict[str, list[dict]]:

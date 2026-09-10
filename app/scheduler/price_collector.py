@@ -32,6 +32,10 @@ scheduler = AsyncIOScheduler(timezone="Asia/Seoul")
 
 _CALL_INTERVAL = 0.3  # data.go.kr API 호출 간격 (초)
 
+# 지역별 소매가는 조사일로부터 며칠 늦게 공표된다. 수집 시점의 "오늘"만 조회하면
+# 항상 0건이 되므로, 매 수집마다 최근 N일 구간을 다시 훑어 누락분을 채운다.
+_REGIONAL_LOOKBACK_DAYS = 5
+
 
 def _upsert(db, item_id: int, price: float, recorded_date: date, region_code: str) -> None:
     db.execute(
@@ -108,8 +112,13 @@ async def _collect_national(db, items: list[Item]) -> int:
 
 
 async def _collect_regional(db, items: list[Item], today: date) -> int:
-    """기간별 API → 지역별 가격 수집 (품목당 1 call, 전 지역 포함)."""
-    today_str = today.strftime("%Y%m%d")
+    """기간별 API → 지역별 가격 수집 (품목당 1 call, 전 지역·최근 N일 포함).
+
+    소매가 공표 지연 때문에 today 단일일이 아니라 [today-LOOKBACK, today] 구간을
+    매번 다시 훑어 insert-ignore 한다. 지역별 값은 사후 정정될 수 있어 upsert.
+    """
+    date_from = (today - timedelta(days=_REGIONAL_LOOKBACK_DAYS)).strftime("%Y%m%d")
+    date_to = today.strftime("%Y%m%d")
     saved = 0
 
     for item in items:
@@ -118,8 +127,8 @@ async def _collect_regional(db, items: list[Item], today: date) -> int:
             rows = await fetch_per_day(
                 item.kamis_category_code,
                 item.kamis_item_code,
-                today_str,
-                today_str,
+                date_from,
+                date_to,
                 item.kamis_kind_code or None,
             )
             if not rows:
@@ -127,27 +136,35 @@ async def _collect_regional(db, items: list[Item], today: date) -> int:
 
             by_region = group_by_region(rows)
             for sgg_cd, region_rows in by_region.items():
-                # '1000'=전국(축산), 그 외 시군구 코드
+                # '1000'=전국(축산 등 recent API에 없는 품목), 그 외 시군구 코드
                 if sgg_cd == "1000":
                     target_region = ""
                 elif sgg_cd in REGION_CODES and sgg_cd != "":
                     target_region = sgg_cd
                 else:
                     continue
-                row = find_grade_row(region_rows, item.kamis_rank, item.kamis_kind_code or None)
-                if row is None:
-                    continue
-                price = _parse_price(row.get("exmn_dd_prc"))
-                if not price:
-                    continue
-                exmn_ymd_str = row.get("exmn_ymd", "")
-                price_date = date.fromisoformat(exmn_ymd_str) if exmn_ymd_str else today
-                # 전국 평균은 최근일자 API가 이미 upsert했을 수 있으므로 DO NOTHING
-                if target_region == "":
-                    _insert_ignore(db, item.id, price, price_date, "")
-                else:
-                    _upsert(db, item.id, price, price_date, target_region)
-                saved += 1
+
+                # 지역·날짜별로 등급 매칭 후 적재
+                by_date: dict[str, list[dict]] = {}
+                for r in region_rows:
+                    by_date.setdefault(r.get("exmn_ymd", ""), []).append(r)
+
+                for ymd, date_rows in by_date.items():
+                    if not ymd:
+                        continue
+                    row = find_grade_row(date_rows, item.kamis_rank, item.kamis_kind_code or None)
+                    if row is None:
+                        continue
+                    price = _parse_price(row.get("exmn_dd_prc"))
+                    if not price:
+                        continue
+                    price_date = date.fromisoformat(ymd)
+                    if target_region == "":
+                        # 전국 평균은 최근일자 API가 이미 upsert했을 수 있으므로 DO NOTHING
+                        _insert_ignore(db, item.id, price, price_date, "")
+                    else:
+                        _upsert(db, item.id, price, price_date, target_region)
+                    saved += 1
 
         except Exception as e:
             logger.warning(f"[지역/{item.code}] 기간별 실패: {e}")

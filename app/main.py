@@ -378,12 +378,17 @@ def health():
     return {"status": "ok"}
 
 
+def _require_admin(request: Request) -> None:
+    """관리자 인증. ADMIN_SECRET 미설정 시에도 차단(fail-closed)."""
+    secret = settings.admin_secret
+    if not secret or request.headers.get("X-Admin-Key", "") != secret:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
 @app.post("/admin/collect")
 async def admin_collect(request: Request):
     """수동 가격 수집 트리거 (배포 직후 데이터 갱신용)."""
-    if settings.admin_secret:
-        if request.headers.get("X-Admin-Key", "") != settings.admin_secret:
-            raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
     from app.scheduler.price_collector import collect_prices
     await collect_prices()
     return {"status": "ok", "message": "수집 완료"}
@@ -392,9 +397,7 @@ async def admin_collect(request: Request):
 @app.post("/admin/backfill")
 async def admin_backfill(request: Request):
     """누락 날짜 백필 트리거. Body: {"date_from": "YYYY-MM-DD", "date_to": "YYYY-MM-DD"}"""
-    if settings.admin_secret:
-        if request.headers.get("X-Admin-Key", "") != settings.admin_secret:
-            raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
     body = await request.json()
     from datetime import date as _date
     from app.scheduler.price_collector import backfill_prices
