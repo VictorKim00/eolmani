@@ -25,7 +25,7 @@
   <meta property="og:title" content="{% block og_title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}" />
   <meta property="og:description" content="{% block og_description %}지금 살 때인지 신호등으로 알려드려요. 64종 식료품 가격 추적.{% endblock %}" />
   <meta property="og:url" content="https://www.eolmani.com{% block og_path %}/{% endblock %}" />
-  <meta property="og:image" content="https://www.eolmani.com/static/og-image.png" />
+  <meta property="og:image" content="https://www.eolmani.com/static/og-image{% if event_def is defined and event_def %}-{{ current_event }}{% endif %}.png" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
