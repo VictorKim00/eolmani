@@ -89,7 +89,7 @@
     class="eolmani-share-btn text-xs px-3 py-1.5 rounded-lg border border-orange-200 bg-white hover:border-orange-400 transition-colors mb-3"
     data-share-title="{{ event_def.title }} 예상 비용 — 얼마니"
     data-share-text="{{ event_def.title }} 합산 {{ '{:,.0f}'.format(event_summary.total_current) }}원{% if event_summary.yoy_pct is not none %} · 작년 이맘때보다 {{ '%+.1f'|format(event_summary.yoy_pct) }}%{% endif %} — 얼마니에서 확인"
-    data-share-url="https://www.eolmani.com/?event={{ current_event }}"
+    data-share-url="https://www.eolmani.com/"
     aria-label="{{ event_def.title }} 공유하기">
     📤 공유하기
   </button>
