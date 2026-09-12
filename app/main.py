@@ -14,7 +14,7 @@ from app.config import settings
 from app.database import get_db
 from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
-from app.services.events_service import get_event
+from app.services.events_service import get_active_event, get_event
 from app.services.price_service import get_event_summary, get_item_history, get_regional_snapshot, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.regions import REGION_COORDS, REGION_GROUPS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
@@ -160,8 +160,14 @@ async def index(request: Request, region: str = "", event: str = "", db: Session
     region_code = normalize_region(region)
     data = get_today_prices(db, region_code=region_code)
 
-    # 명절·시즌 이벤트 프리셋 (예: ?event=chuseok) — 없으면 무시
-    event_def = get_event(event)
+    # 명절·시즌 이벤트 프리셋 (예: ?event=chuseok).
+    # ?event= 명시 시 기간 무관하게 노출(공유 링크가 기간 끝나도 안 깨지게), 없으면
+    # 기간 안일 때만 자동 노출(공유 안 해도 방문자가 그냥 보게 하기 위함).
+    if event:
+        active_slug, event_def = event, get_event(event)
+    else:
+        auto = get_active_event()
+        active_slug, event_def = auto if auto else ("", None)
     event_summary = get_event_summary(db, data.items, event_def["item_codes"]) if event_def else None
 
     # 신호등 계산 (정렬에 먼저 사용)
@@ -286,7 +292,7 @@ async def index(request: Request, region: str = "", event: str = "", db: Session
             "hero_items": hero_items,
             "event_def": event_def,
             "event_summary": event_summary,
-            "current_event": event if event_def else "",
+            "current_event": active_slug if event_def else "",
             "regions": REGIONS,
             "region_groups": REGION_GROUPS,
             "current_region_code": region_code,
