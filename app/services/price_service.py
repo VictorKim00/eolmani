@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.item import Item
 from app.models.price_history import PriceHistory
 from app.schemas.price import PriceHistoryPoint, PriceHistoryResponse, PriceItem, PricesTodayResponse
+from app.services.regions import REGION_LABEL
 
 
 def _price_near(
@@ -165,3 +166,70 @@ def get_item_history(db: Session, item_code: str, days: int = 30, region_code: s
         points=points,
         coupang_url=item.coupang_url,
     )
+
+
+def get_regional_snapshot(db: Session, item_code: str, max_age_days: int = 14) -> dict | None:
+    """
+    품목별 지역별 최신 가격 스냅샷 ("우리 동네 vs 전국" 비교표용).
+    max_age_days 이내 데이터가 없는 지역은 결측으로 제외한다(오래된 값으로 착시 방지).
+    """
+    item = db.execute(select(Item).where(Item.code == item_code)).scalar_one_or_none()
+    if item is None:
+        return None
+
+    cutoff = date.today() - timedelta(days=max_age_days)
+    subq = (
+        select(
+            PriceHistory.region_code,
+            PriceHistory.price,
+            PriceHistory.recorded_date,
+        )
+        .distinct(PriceHistory.region_code)
+        .where(PriceHistory.item_id == item.id)
+        .where(PriceHistory.source == "kamis")
+        .where(PriceHistory.recorded_date >= cutoff)
+        .order_by(PriceHistory.region_code, PriceHistory.recorded_date.desc())
+        .subquery()
+    )
+    rows = db.execute(
+        select(subq.c.region_code, subq.c.price, subq.c.recorded_date)
+    ).all()
+
+    national_price: float | None = None
+    cities: list[dict] = []
+    for region_code, price, recorded_date in rows:
+        price_float = float(price)
+        if region_code == "":
+            national_price = price_float
+            continue
+        cities.append({
+            "code": region_code,
+            "label": REGION_LABEL.get(region_code, region_code),
+            "price": price_float,
+            "recorded_date": recorded_date,
+        })
+
+    if not cities:
+        return None
+
+    cities.sort(key=lambda c: c["price"])
+    for c in cities:
+        c["vs_nation"] = (
+            round((c["price"] - national_price) / national_price * 100, 1)
+            if national_price else None
+        )
+
+    cheapest = cities[0]
+    priciest = cities[-1]
+    spread_pct = (
+        round((priciest["price"] - cheapest["price"]) / cheapest["price"] * 100, 1)
+        if cheapest["price"] else None
+    )
+
+    return {
+        "national_price": national_price,
+        "cities": cities,
+        "cheapest": cheapest,
+        "priciest": priciest,
+        "spread_pct": spread_pct,
+    }

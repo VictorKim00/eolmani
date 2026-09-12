@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, text
@@ -14,7 +14,7 @@ from app.config import settings
 from app.database import get_db
 from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
-from app.services.price_service import get_item_history, get_today_prices
+from app.services.price_service import get_item_history, get_regional_snapshot, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.regions import REGION_COORDS, REGION_GROUPS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
 from app.services.season_service import get_this_month_season
@@ -144,6 +144,14 @@ from urllib.parse import quote_plus
 
 templates = Jinja2Templates(directory="app/templates")
 templates.env.filters["urlencode_str"] = quote_plus
+
+
+@app.head("/")
+async def index_head() -> Response:
+    """일부 크롤러·업타임 모니터가 HEAD로 홈을 확인한다.
+    FastAPI는 (Starlette 기본 Route와 달리) GET 라우트에 HEAD를 자동으로 열어주지 않아
+    별도 등록이 필요 — 전체 조회 로직을 다 태우지 않도록 가벼운 200만 반환한다."""
+    return Response(status_code=200)
 
 
 @app.get("/")
@@ -297,6 +305,7 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
     chart_prices = [p.price for p in history.points]
     month_stats = get_month_vs_annual(db, item_code, today_date.month)
     action = get_action(signal, history.change_7d, history.change_30d, month_stats)
+    regional_snapshot = get_regional_snapshot(db, item_code)
 
     # 같은 그룹의 형제 품목 조회 (탭 전환용)
     current_item = db.execute(
@@ -338,6 +347,7 @@ async def item_detail(item_code: str, request: Request, region: str = "", db: Se
             "month_stats": month_stats,
             "current_month": today_date.month,
             "action": action,
+            "regional_snapshot": regional_snapshot,
             "siblings": siblings,
             "current_item_code": item_code,
             "group_display_name": GROUP_DISPLAY_NAMES.get(

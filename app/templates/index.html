@@ -49,6 +49,14 @@
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <span class="text-xs text-gray-400">{{ "{:,.0f}".format(item.price) }}원<span class="text-gray-300">/{{ item.unit }}</span></span>
+        <button type="button"
+          class="eolmani-share-btn text-xs px-2 py-1.5 rounded-lg border border-gray-200 hover:border-emerald-400 transition-colors"
+          data-share-title="{{ item.name }} 오늘 가격 — 얼마니"
+          data-share-text="{{ item.name }} {{ '{:,.0f}'.format(item.price) }}원 · 평년보다 {{ '%.1f'|format(item.change_avg|abs) }}% 저렴 — 얼마니에서 확인"
+          data-share-url="https://www.eolmani.com/items/{{ item.code }}"
+          aria-label="{{ item.name }} 공유하기">
+          📤
+        </button>
         <a href="{{ item.coupang_url if item.coupang_url else 'https://www.coupang.com/np/search?q=' + (item.name | urlencode_str) }}"
            target="_blank" rel="noopener noreferrer"
            class="text-xs bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">

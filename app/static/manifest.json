@@ -1,0 +1,14 @@
+{
+  "name": "얼마니 — 오늘 장바구니 얼마니?",
+  "short_name": "얼마니",
+  "description": "공공데이터 기반 농축수산물 가격·구매 타이밍 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#047857",
+  "lang": "ko",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

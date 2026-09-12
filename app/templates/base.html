@@ -8,6 +8,13 @@
   <meta name="keywords" content="식료품 가격, 농산물 시세, 오늘 사과 가격, 배추 가격, 돼지고기 가격, 계란 가격, 얼마니" />
   <link rel="canonical" href="https://www.eolmani.com{% block canonical_path %}/{% endblock %}" />
 
+  <!-- 파비콘 / 홈 화면 아이콘 -->
+  <link rel="icon" href="/static/favicon.ico" sizes="any" />
+  <link rel="icon" href="/static/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <meta name="theme-color" content="#047857" />
+
   <!-- 검색엔진 인증 -->
   {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}" />{% endif %}
   {% if naver_site_verification %}<meta name="naver-site-verification" content="{{ naver_site_verification }}" />{% endif %}
@@ -21,7 +28,10 @@
   <meta property="og:image" content="https://www.eolmani.com/static/og-image.png" />
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- 구조화 데이터 (품목 상세 페이지에서 채움) -->
+  {% block json_ld %}{% endblock %}
   <meta name="twitter:title" content="{% block twitter_title %}얼마니 — 오늘 식료품 가격 얼마니?{% endblock %}" />
   <meta name="twitter:description" content="{% block twitter_description %}지금 살 때인지 신호등으로 알려드려요.{% endblock %}" />
 
@@ -37,8 +47,7 @@
   {% endif %}
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  {% block head_scripts %}{% endblock %}
   <style>
     [x-cloak] { display: none; }
   </style>
@@ -94,6 +103,43 @@
   </footer>
 
   {% block scripts %}{% endblock %}
+
+  <!-- 공유하기: OS 공유시트(카카오톡 포함) 우선, 미지원 브라우저는 링크 복사로 폴백 -->
+  <script>
+    function eolmaniToast(msg) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.className = 'fixed left-1/2 -translate-x-1/2 bottom-6 bg-gray-900 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2400);
+    }
+
+    async function eolmaniShare(opts) {
+      const { title, text, url } = opts;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+        } catch (e) { /* 사용자 취소 등은 무시 */ }
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        eolmaniToast('링크가 복사됐어요 · 카카오톡 등에 붙여넣어 보세요');
+      } catch (e) {
+        eolmaniToast(url);
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.eolmani-share-btn');
+      if (!btn) return;
+      eolmaniShare({
+        title: btn.dataset.shareTitle || document.title,
+        text: btn.dataset.shareText || '',
+        url: btn.dataset.shareUrl || window.location.href,
+      });
+    });
+  </script>
 
   <script>
     (function () {
