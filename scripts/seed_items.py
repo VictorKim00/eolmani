@@ -61,7 +61,7 @@ ITEMS = [
     {"code": "broccoli",        "name": "브로콜리",       "category": "채소", "unit": "1개",   "kamis_category_code": "200", "kamis_item_code": "280",  "kamis_kind_code": "00", "kamis_rank": "상품"},
     {"code": "cherry_tomato",   "name": "방울토마토",     "category": "채소", "unit": "1kg",   "kamis_category_code": "200", "kamis_item_code": "422",  "kamis_kind_code": "01", "kamis_rank": "상품"},
     # ── 과일 (category 400 + KAMIS 200 일부) ────────────────────────
-    {"code": "apple",           "name": "사과",           "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "411",  "kamis_kind_code": "05", "kamis_rank": "상품"},
+    {"code": "apple",           "name": "사과",           "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "411",  "kamis_kind_code": "07", "kamis_rank": "상품"},  # 홍로(추석사과, 9월 출하). 후지(05)는 10~11월 출하라 9월엔 조사 끊김
     {"code": "pear",            "name": "배",             "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "412",  "kamis_kind_code": "01", "kamis_rank": "상품"},
     {"code": "mandarin",        "name": "감귤",           "category": "과일", "unit": "10개",  "kamis_category_code": "400", "kamis_item_code": "415",  "kamis_kind_code": "02", "kamis_rank": "M과"},  # 시설 감귤(연중 조사). 노지(01)는 겨울만
     {"code": "strawberry",      "name": "딸기",           "category": "과일", "unit": "500g",  "kamis_category_code": "200", "kamis_item_code": "226",  "kamis_kind_code": "00", "kamis_rank": "상품"},

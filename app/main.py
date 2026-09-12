@@ -14,7 +14,8 @@ from app.config import settings
 from app.database import get_db
 from app.models.item import Item as ItemModel
 from app.scheduler.price_collector import collect_prices, start_scheduler, stop_scheduler
-from app.services.price_service import get_item_history, get_regional_snapshot, get_today_prices
+from app.services.events_service import get_event
+from app.services.price_service import get_event_summary, get_item_history, get_regional_snapshot, get_today_prices
 from app.services.price_stats_service import enrich_season_picks, get_month_vs_annual
 from app.services.regions import REGION_COORDS, REGION_GROUPS, REGION_LABEL, REGION_WEATHER_LABEL, REGIONS, normalize_region
 from app.services.season_service import get_this_month_season
@@ -155,9 +156,13 @@ async def index_head() -> Response:
 
 
 @app.get("/")
-async def index(request: Request, region: str = "", db: Session = Depends(get_db)):
+async def index(request: Request, region: str = "", event: str = "", db: Session = Depends(get_db)):
     region_code = normalize_region(region)
     data = get_today_prices(db, region_code=region_code)
+
+    # 명절·시즌 이벤트 프리셋 (예: ?event=chuseok) — 없으면 무시
+    event_def = get_event(event)
+    event_summary = get_event_summary(db, data.items, event_def["item_codes"]) if event_def else None
 
     # 신호등 계산 (정렬에 먼저 사용)
     signals = {
@@ -279,6 +284,9 @@ async def index(request: Request, region: str = "", db: Session = Depends(get_db
             "impacts": impacts,
             "week_summary": week_summary,
             "hero_items": hero_items,
+            "event_def": event_def,
+            "event_summary": event_summary,
+            "current_event": event if event_def else "",
             "regions": REGIONS,
             "region_groups": REGION_GROUPS,
             "current_region_code": region_code,

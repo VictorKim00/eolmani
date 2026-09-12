@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block title %}{% if event_def and event_summary %}{{ event_def.title }} 예상 비용 — 얼마니{% else %}얼마니 — 오늘 식료품 가격 얼마니?{% endif %}{% endblock %}
+{% block meta_description %}{% if event_def and event_summary %}{{ event_def.title }} 합산 {{ "{:,.0f}".format(event_summary.total_current) }}원. 공공데이터 기반 가격 추적 서비스 얼마니에서 확인하세요.{% else %}공공데이터포털 기반 농수산물·식료품 가격 추적 서비스. 지금 살 때인지 신호등으로 알려드려요. 사과·배추·돼지고기·계란 등 64종 실시간 시세.{% endif %}{% endblock %}
+{% block og_title %}{% if event_def and event_summary %}{{ event_def.emoji }} {{ event_def.title }} — {{ "{:,.0f}".format(event_summary.total_current) }}원{% else %}얼마니 — 오늘 식료품 가격 얼마니?{% endif %}{% endblock %}
+{% block og_description %}{% if event_def and event_summary %}품목당 1단위 기준 합산{% if event_summary.yoy_pct is not none %} · 작년 이맘때보다 {{ "%+.1f"|format(event_summary.yoy_pct) }}%{% endif %} — 얼마니에서 품목별 가격 확인{% else %}지금 살 때인지 신호등으로 알려드려요. 64종 식료품 가격 추적.{% endif %}{% endblock %}
+
 {% macro change_badge(rate, label) %}
 {% if rate is none %}
   <span class="text-xs text-gray-300">—</span>
@@ -21,6 +26,39 @@
 </span>
 {% endmacro %}
 
+{# 단일 품목 카드 — 카테고리 그리드와 이벤트(추석 등) 섹션에서 공유. UI 바뀔 때 한 곳만 고치면 됨. #}
+{% macro item_card(item, sig, category) %}
+{% set div_info = unit_divisor.get(item.unit) %}
+<a href="/items/{{ item.code }}"
+   data-cat="{{ category }}"
+   data-name="{{ item.name | lower }}"
+   class="item-card bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-gray-200 transition-all">
+  <div class="min-w-0">
+    <div class="flex items-center gap-2">
+      <span class="text-base">{{ signal_emoji[sig] }}</span>
+      <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
+      {{ signal_pill(sig) }}
+    </div>
+    <p class="text-xs text-gray-500 mt-1">{{ current_region_label }} · <span class="bg-gray-100 text-gray-400 text-[10px] px-1 py-0.5 rounded">소매가</span></p>
+  </div>
+  <div class="text-right shrink-0 ml-3">
+    <p class="text-xl font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원 <span class="text-sm font-normal text-gray-400">/ {{ item.unit }}</span></p>
+    {% if div_info %}
+    <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
+    {% endif %}
+    {% if item.vs_nation is not none %}
+    <p class="text-xs mt-0.5 {% if item.vs_nation > 0 %}text-red-400{% elif item.vs_nation < 0 %}text-blue-400{% else %}text-gray-400{% endif %}">
+      전국 대비 {{ "%+.1f"|format(item.vs_nation) }}%
+    </p>
+    {% endif %}
+    <div class="flex gap-2 justify-end mt-1">
+      {{ change_badge(item.change_7d, "7일") }}
+      {{ change_badge(item.change_30d, "30일") }}
+    </div>
+  </div>
+</a>
+{% endmacro %}
+
 {% block content %}
 
 {% if not category_cards %}
@@ -31,6 +69,38 @@
 </div>
 
 {% else %}
+
+<!-- 명절 성수품 이벤트 배너 (?event=chuseok 등) -->
+{% if event_def and event_summary %}
+<div class="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded-2xl px-5 py-4 mb-5">
+  <h2 class="text-sm font-bold text-orange-800 mb-2">{{ event_def.emoji }} {{ event_def.title }}</h2>
+  <p class="text-2xl font-bold text-gray-900">{{ "{:,.0f}".format(event_summary.total_current) }}원</p>
+  <p class="text-xs text-gray-500 mt-0.5 mb-3">
+    품목당 1단위 기준 합산 · {{ event_summary.total_count }}개 품목
+    {% if event_summary.yoy_pct is not none %}
+    · 작년 이맘때보다
+    <span class="font-semibold {% if event_summary.yoy_pct > 0 %}text-red-500{% elif event_summary.yoy_pct < 0 %}text-blue-500{% else %}text-gray-400{% endif %}">
+      {{ "%+.1f"|format(event_summary.yoy_pct) }}%
+    </span>
+    ({{ event_summary.yoy_covered_count }}개 품목 기준)
+    {% endif %}
+  </p>
+  <button type="button"
+    class="eolmani-share-btn text-xs px-3 py-1.5 rounded-lg border border-orange-200 bg-white hover:border-orange-400 transition-colors mb-3"
+    data-share-title="{{ event_def.title }} 예상 비용 — 얼마니"
+    data-share-text="{{ event_def.title }} 합산 {{ '{:,.0f}'.format(event_summary.total_current) }}원{% if event_summary.yoy_pct is not none %} · 작년 이맘때보다 {{ '%+.1f'|format(event_summary.yoy_pct) }}%{% endif %} — 얼마니에서 확인"
+    data-share-url="https://www.eolmani.com/?event={{ current_event }}"
+    aria-label="{{ event_def.title }} 공유하기">
+    📤 공유하기
+  </button>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+    {% for item in event_summary.cards %}
+    {{ item_card(item, signals[item.code], item.category) }}
+    {% endfor %}
+  </div>
+  <p class="text-xs text-gray-400 mt-3">가격은 공공데이터포털 도소매 조사 평균이며, 실제 선물세트·마트 가격과 다를 수 있습니다.</p>
+</div>
+{% endif %}
 
 <!-- 히어로 카드: 지금 사기 좋은 품목 -->
 {% if hero_items %}
@@ -293,37 +363,7 @@
 
     {# ── 단일 품목 카드 ── #}
     {% else %}
-    {% set item = card.item %}
-    {% set sig = signals[item.code] %}
-    {% set div_info = unit_divisor.get(item.unit) %}
-    <a href="/items/{{ item.code }}"
-       data-cat="{{ category }}"
-       data-name="{{ item.name | lower }}"
-       class="item-card bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex justify-between items-center hover:shadow-md hover:border-gray-200 transition-all">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="text-base">{{ signal_emoji[sig] }}</span>
-          <p class="font-semibold text-gray-800 truncate">{{ item.name }}</p>
-          {{ signal_pill(sig) }}
-        </div>
-        <p class="text-xs text-gray-500 mt-1">{{ current_region_label }} · <span class="bg-gray-100 text-gray-400 text-[10px] px-1 py-0.5 rounded">소매가</span></p>
-      </div>
-      <div class="text-right shrink-0 ml-3">
-        <p class="text-xl font-bold text-gray-900">{{ "{:,.0f}".format(item.price) }}원 <span class="text-sm font-normal text-gray-400">/ {{ item.unit }}</span></p>
-        {% if div_info %}
-        <p class="text-xs text-gray-400">{{ "{:,.0f}".format((item.price / div_info[0]) | round | int) }}원 {{ div_info[1] }}</p>
-        {% endif %}
-        {% if item.vs_nation is not none %}
-        <p class="text-xs mt-0.5 {% if item.vs_nation > 0 %}text-red-400{% elif item.vs_nation < 0 %}text-blue-400{% else %}text-gray-400{% endif %}">
-          전국 대비 {{ "%+.1f"|format(item.vs_nation) }}%
-        </p>
-        {% endif %}
-        <div class="flex gap-2 justify-end mt-1">
-          {{ change_badge(item.change_7d, "7일") }}
-          {{ change_badge(item.change_30d, "30일") }}
-        </div>
-      </div>
-    </a>
+    {{ item_card(card.item, signals[card.item.code], category) }}
     {% endif %}
 
     {% endfor %}

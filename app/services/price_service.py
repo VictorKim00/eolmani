@@ -233,3 +233,43 @@ def get_regional_snapshot(db: Session, item_code: str, max_age_days: int = 14) -
         "priciest": priciest,
         "spread_pct": spread_pct,
     }
+
+
+def get_event_summary(db: Session, items: list[PriceItem], item_codes_ordered: list[str]) -> dict | None:
+    """
+    홈 화면에 이미 조회된 오늘의 가격 목록(items)에서 item_codes_ordered에 해당하는 품목만
+    골라 합산 총액 + 작년 이맘때 대비 %를 계산한다 (추석 성수품 등 이벤트 배너용).
+
+    - 합산 총액: 골라낸 전체 품목 기준(품목당 1단위)
+    - 작년 대비 %: avg_year_price(공공데이터포털 yy1_bfr_prc, "1년 전 같은 날짜" 값)가
+      있는 품목만으로 계산 — 없는 품목은 총액엔 포함하되 비교에서는 제외하고 몇 개가
+      반영됐는지 별도로 알려준다(착시 방지).
+    """
+    by_code = {i.code: i for i in items}
+    picked = [by_code[c] for c in item_codes_ordered if c in by_code]
+    if not picked:
+        return None
+
+    ids = [i.item_id for i in picked]
+    rows = db.execute(select(Item.id, Item.avg_year_price).where(Item.id.in_(ids))).all()
+    avg_year_by_id = {r.id: float(r.avg_year_price) for r in rows if r.avg_year_price}
+
+    total_current = sum(i.price for i in picked)
+    yoy_covered = [i for i in picked if i.item_id in avg_year_by_id]
+    total_last_year_covered = sum(avg_year_by_id[i.item_id] for i in yoy_covered)
+    total_current_covered = sum(i.price for i in yoy_covered)
+
+    yoy_pct = (
+        round((total_current_covered - total_last_year_covered) / total_last_year_covered * 100, 1)
+        if total_last_year_covered > 0 else None
+    )
+
+    return {
+        # 주의: 딕셔너리 키 "items"는 쓰지 말 것 — Jinja가 dict.items() 메서드로 오인해
+        # 템플릿에서 event_summary.items 가 리스트가 아니라 바운드 메서드로 잡힌다.
+        "cards": picked,
+        "total_current": total_current,
+        "total_count": len(picked),
+        "yoy_pct": yoy_pct,
+        "yoy_covered_count": len(yoy_covered),
+    }
