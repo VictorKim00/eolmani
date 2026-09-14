@@ -19,6 +19,10 @@ EVENTS: dict[str, dict] = {
         "emoji": "🎑",
         "date_from": date(2026, 9, 1),
         "date_to": date(2026, 9, 27),  # 추석(9/25) + 이틀 여유
+        # 배너의 개별 품목 링크(쿠팡에서 보기)는 평균가와 단위가 맞는 일반 상품 그대로 둔다.
+        # 이건 별도의 "선물세트" CTA용 — 파트너스 링크 만들면 여기 채워넣을 것.
+        # 없는 동안은 일반(비추적) 쿠팡 검색 링크로 대체된다.
+        "gift_set_url": None,
         # 차례상·선물세트에서 자주 쓰이는 품목 순서대로. item_code는 seed_items.py 기준.
         "item_codes": [
             "apple", "pear",
