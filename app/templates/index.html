@@ -94,11 +94,13 @@
       aria-label="{{ event_def.title }} 공유하기">
       📤 공유하기
     </button>
-    <a href="{{ event_def.gift_set_url if event_def.gift_set_url else 'https://www.coupang.com/np/search?q=' + ('추석 선물세트' | urlencode_str) }}"
+    {% for gift in event_def.gift_sets %}
+    <a href="{{ gift.url if gift.url else 'https://www.coupang.com/np/search?q=' + (gift.query | urlencode_str) }}"
        target="_blank" rel="noopener noreferrer"
        class="text-xs bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-3 py-1.5 rounded-lg transition-colors">
-      🎁 추석 선물세트 보러가기
+      {{ gift.label }}
     </a>
+    {% endfor %}
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
     {% for item in event_summary.cards %}
