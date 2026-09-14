@@ -25,9 +25,9 @@ EVENTS: dict[str, dict] = {
         # url이 None인 동안은 일반(비추적) 쿠팡 검색 링크로 대체된다.
         # 파트너스에서 링크 만들면 url 자리만 채워넣으면 됨.
         "gift_sets": [
-            {"label": "🍎 과일 선물세트", "query": "추석 과일 선물세트", "url": None},
-            {"label": "🥩 정육 선물세트", "query": "한우 선물세트", "url": None},
-            {"label": "🐟 수산물 세트", "query": "수산물 선물세트", "url": None},
+            {"label": "🍎 과일 선물세트", "query": "추석 과일 선물세트", "url": "https://link.coupang.com/a/g1KzOZgrVA"},
+            {"label": "🥩 정육 선물세트", "query": "한우 선물세트", "url": "https://link.coupang.com/a/g1KDtMLntA"},
+            {"label": "🐟 수산물 세트", "query": "수산물 선물세트", "url": "https://link.coupang.com/a/g1KHTAwROu"},
         ],
         # 차례상·선물세트에서 자주 쓰이는 품목 순서대로. item_code는 seed_items.py 기준.
         "item_codes": [
