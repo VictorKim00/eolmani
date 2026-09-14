@@ -30,12 +30,12 @@ COUPANG_URLS: dict[str, str] = {
     "potato":           "https://link.coupang.com/a/eCP23j",
     "sweet_potato":     "https://link.coupang.com/a/eCP4iz",
     # "glutinous_rice": "https://link.coupang.com/a/XXXXXX",  # 찹쌀
-    # "bean":           "https://link.coupang.com/a/XXXXXX",  # 콩
+    "bean":             "https://link.coupang.com/a/g1KV3ZW6Fg",  # 콩
 
     # ── 버섯 ─────────────────────────────────────────────────────────
-    # "oyster_mushroom": "https://link.coupang.com/a/XXXXXX",  # 느타리버섯
-    # "enoki_mushroom":  "https://link.coupang.com/a/XXXXXX",  # 팽이버섯
-    # "king_mushroom":   "https://link.coupang.com/a/XXXXXX",  # 새송이버섯
+    "oyster_mushroom": "https://link.coupang.com/a/eFeO4e",  # 느타리버섯
+    "enoki_mushroom":  "https://link.coupang.com/a/eFeQAJ",  # 팽이버섯
+    "king_mushroom":   "https://link.coupang.com/a/eFeSfC",  # 새송이버섯
 
     # ── 채소 ─────────────────────────────────────────────────────────
     "cabbage":          "https://link.coupang.com/a/eCP6id",
@@ -48,24 +48,24 @@ COUPANG_URLS: dict[str, str] = {
     "spinach":          "https://link.coupang.com/a/eCQfzC",
     "tomato":           "https://link.coupang.com/a/eCPXbj",
     "carrot":           "https://link.coupang.com/a/eCPU4g",
-    # "cucumber":         "https://link.coupang.com/a/XXXXXX",  # 오이(다다기)
-    # "cucumber_spiny":   "https://link.coupang.com/a/XXXXXX",  # 오이(가시) — cucumber와 동일 URL 가능
-    # "cucumber_green":   "https://link.coupang.com/a/XXXXXX",  # 오이(취청) — cucumber와 동일 URL 가능
-    # "zucchini":         "https://link.coupang.com/a/XXXXXX",  # 호박(애호박)
-    # "zucchini_green":   "https://link.coupang.com/a/XXXXXX",  # 호박(쥬키니) — zucchini와 동일 URL 가능
-    # "lettuce":          "https://link.coupang.com/a/XXXXXX",  # 상추(청)
-    # "lettuce_red":      "https://link.coupang.com/a/XXXXXX",  # 상추(적) — lettuce와 동일 URL 가능
-    # "chili":            "https://link.coupang.com/a/XXXXXX",  # 청양고추
-    # "perilla":          "https://link.coupang.com/a/XXXXXX",  # 깻잎
-    # "cabbage_head":     "https://link.coupang.com/a/XXXXXX",  # 양배추
-    # "yeolgal":          "https://link.coupang.com/a/XXXXXX",  # 얼갈이배추
-    # "young_radish":     "https://link.coupang.com/a/XXXXXX",  # 열무
-    # "green_pepper":     "https://link.coupang.com/a/XXXXXX",  # 풋고추
-    # "red_pepper":       "https://link.coupang.com/a/XXXXXX",  # 붉은고추
-    # "paprika":          "https://link.coupang.com/a/XXXXXX",  # 파프리카
-    # "mini_cabbage":     "https://link.coupang.com/a/XXXXXX",  # 알배기배추
-    # "broccoli":         "https://link.coupang.com/a/XXXXXX",  # 브로콜리
-    # "cherry_tomato":    "https://link.coupang.com/a/XXXXXX",  # 방울토마토
+    "cucumber":         "https://link.coupang.com/a/eFecku",  # 오이(다다기)
+    "cucumber_spiny":   "https://link.coupang.com/a/eFed74",  # 오이(가시) — cucumber와 동일 URL 가능
+    "cucumber_green":   "https://link.coupang.com/a/eFefUN",  # 오이(취청) — cucumber와 동일 URL 가능
+    "zucchini":         "https://link.coupang.com/a/eFeiXj",  # 호박(애호박)
+    "zucchini_green":   "https://link.coupang.com/a/eFekzT",  # 호박(쥬키니) — zucchini와 동일 URL 가능
+    "lettuce":          "https://link.coupang.com/a/eFenrU",  # 상추(청)
+    "lettuce_red":      "https://link.coupang.com/a/eFeoQ3",  # 상추(적) — lettuce와 동일 URL 가능
+    "chili":            "https://link.coupang.com/a/eFesCs",  # 청양고추
+    "perilla":          "https://link.coupang.com/a/eFeumx",  # 깻잎
+    "cabbage_head":     "https://link.coupang.com/a/eFexI2",  # 양배추
+    "yeolgal":          "https://link.coupang.com/a/eFezGn",  # 얼갈이배추
+    "young_radish":     "https://link.coupang.com/a/eFeB9V",  # 열무
+    "green_pepper":     "https://link.coupang.com/a/eFeDYp",  # 풋고추
+    "red_pepper":       "https://link.coupang.com/a/eFeGIY",  # 붉은고추
+    "paprika":          "https://link.coupang.com/a/eFeIGw",  # 파프리카
+    "mini_cabbage":     "https://link.coupang.com/a/eFeJ7e",  # 알배기배추
+    "broccoli":         "https://link.coupang.com/a/eFeLTi",  # 브로콜리
+    "cherry_tomato":    "https://link.coupang.com/a/g1K1Bf5vz2",  # 방울토마토
 
     # ── 과일 ─────────────────────────────────────────────────────────
     "apple":            "https://link.coupang.com/a/eCPCtu",
@@ -73,32 +73,32 @@ COUPANG_URLS: dict[str, str] = {
     "strawberry":       "https://link.coupang.com/a/eCPHKY",
     "banana":           "https://link.coupang.com/a/eCPJuW",
     "watermelon":       "https://link.coupang.com/a/eCPLCN",
-    # "mandarin":         "https://link.coupang.com/a/XXXXXX",  # 감귤 (비시즌 4~9월)
-    # "korean_melon":     "https://link.coupang.com/a/XXXXXX",  # 참외
-    # "melon":            "https://link.coupang.com/a/XXXXXX",  # 멜론
-    # "peach":            "https://link.coupang.com/a/XXXXXX",  # 복숭아 (시즌 7~9월)
-    # "grape_campbell":   "https://link.coupang.com/a/XXXXXX",  # 포도(캠벨) (시즌 8~9월)
-    # "grape_shine":      "https://link.coupang.com/a/XXXXXX",  # 포도(샤인머스켓) (시즌 8~10월)
+    "mandarin":         "https://link.coupang.com/a/eFd9jj",  # 감귤 (비시즌 4~9월)
+    "korean_melon":     "https://link.coupang.com/a/eFdY2j",  # 참외
+    "melon":            "https://link.coupang.com/a/eFd2rZ",  # 멜론
+    "peach":            "https://link.coupang.com/a/eFd8uc",  # 복숭아 (시즌 7~9월)
+    "grape_campbell":   "https://link.coupang.com/a/eFd6RW",  # 포도(캠벨) (시즌 8~9월)
+    "grape_shine":      "https://link.coupang.com/a/eFd4KZ",  # 포도(샤인머스켓) (시즌 8~10월)
 
     # ── 축산 ─────────────────────────────────────────────────────────
     "pork_belly":       "https://link.coupang.com/a/eCPqAo",
     "chicken":          "https://link.coupang.com/a/eCPmmq",
     "egg_30":           "https://link.coupang.com/a/eCPjPv",
-    # "pork_neck":        "https://link.coupang.com/a/XXXXXX",  # 돼지 목심
-    # "pork_foreleg":     "https://link.coupang.com/a/XXXXXX",  # 돼지 앞다리
-    # "beef_sirloin":     "https://link.coupang.com/a/XXXXXX",  # 한우 등심
-    # "beef_tenderloin":  "https://link.coupang.com/a/XXXXXX",  # 한우 안심
-    # "beef_brisket":     "https://link.coupang.com/a/XXXXXX",  # 한우 양지
-    # "beef_ribs":        "https://link.coupang.com/a/XXXXXX",  # 한우 갈비
+    "pork_neck":        "https://link.coupang.com/a/eCQThc",  # 돼지 목심
+    "pork_foreleg":     "https://link.coupang.com/a/eCQVmv",  # 돼지 앞다리
+    "beef_sirloin":     "https://link.coupang.com/a/eCQYO6",  # 한우 등심
+    "beef_tenderloin":  "https://link.coupang.com/a/eCQ0mQ",  # 한우 안심
+    "beef_brisket":     "https://link.coupang.com/a/eCQ2Vc",  # 한우 양지
+    "beef_ribs":        "https://link.coupang.com/a/eCQ5QY",  # 한우 갈비
 
     # ── 수산 ─────────────────────────────────────────────────────────
     "mackerel":         "https://link.coupang.com/a/eCPvrM",
     "hairtail":         "https://link.coupang.com/a/eCPwVI",
     "laver":            "https://link.coupang.com/a/eCPAw0",
-    # "squid":            "https://link.coupang.com/a/XXXXXX",  # 오징어
-    # "croaker":          "https://link.coupang.com/a/XXXXXX",  # 조기
-    # "spanish_mackerel": "https://link.coupang.com/a/XXXXXX",  # 삼치
-    # "pollack":          "https://link.coupang.com/a/XXXXXX",  # 명태
+    "squid":            "https://link.coupang.com/a/eCQIZe",  # 오징어
+    "croaker":          "https://link.coupang.com/a/eCQPlP",  # 조기
+    "spanish_mackerel": "https://link.coupang.com/a/eCQRyK",  # 삼치
+    "pollack":          "https://link.coupang.com/a/g1KZYsdxDw",  # 명태
 }
 # ────────────────────────────────────────────────────────────────────
 
